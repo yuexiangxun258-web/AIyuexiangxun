@@ -1,0 +1,7 @@
+.warp-text { position: relative; isolation: isolate; }
+.warp-text__content { color: inherit; font-family: inherit; font-size: inherit; font-style: inherit; font-weight: inherit; letter-spacing: inherit; line-height: inherit; text-align: inherit; white-space: inherit; }
+.warp-text[data-warp-ready='true'] > .warp-text__content { visibility: hidden; }
+.warp-text__canvas { position: absolute; z-index: 1; display: block; max-width: none; pointer-events: none; }
+.hero-work-intro h2.warp-text { display: block; }
+.hero-work-intro h2.warp-text .warp-text__content { font-family: inherit; font-size: inherit; font-weight: inherit; letter-spacing: inherit; line-height: inherit; }
+@media (prefers-reduced-motion: reduce) { .warp-text__canvas { display: none; } .warp-text[data-warp-ready='true'] > .warp-text__content { visibility: visible; } }

@@ -1,0 +1,87 @@
+.glass-surface {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  isolation: isolate;
+  overflow: hidden;
+  color: inherit;
+  background: rgba(217, 232, 228, .17);
+  -webkit-backdrop-filter: brightness(var(--glass-brightness)) saturate(145%);
+  backdrop-filter: brightness(var(--glass-brightness)) saturate(145%);
+}
+
+.glass-surface::before,
+.glass-surface::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.glass-surface::before {
+  z-index: 0;
+  inset: 0;
+  padding: 4px;
+  background:
+    linear-gradient(118deg, rgba(255,255,255,1), rgba(188,244,255,.5) 20%, rgba(255,255,255,.16) 46%, rgba(181,166,255,.7) 75%, rgba(255,255,255,.98)),
+    repeating-radial-gradient(circle at 18% 16%, rgba(255,255,255,.48) 0 1px, transparent 1px 8px);
+  background-size: 100% 100%, var(--glass-distortion-scale) var(--glass-distortion-scale);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  box-shadow:
+    inset var(--glass-red-offset) 0 4px rgba(255,86,104,.56),
+    inset var(--glass-green-offset) 0 4px rgba(99,255,183,.48),
+    inset 0 var(--glass-blue-offset) 5px rgba(104,141,255,.58);
+  filter: saturate(155%) contrast(118%);
+}
+
+.glass-surface::after {
+  z-index: 0;
+  inset: 1px;
+  border: 2px solid rgba(255,255,255,.86);
+  box-shadow:
+    inset 4px 0 9px rgba(168,226,255,.38),
+    inset -4px 0 9px rgba(193,174,255,.34),
+    inset 0 4px 8px rgba(255,255,255,.28),
+    inset 0 -4px 9px rgba(103,134,255,.25),
+    0 0 var(--glass-glow) rgba(210,231,255,.52),
+    0 0 0 1px rgba(255,255,255,.3);
+  filter: blur(var(--glass-blur));
+}
+
+.glass-surface__content {
+  position: relative;
+  z-index: 1;
+}
+
+.glass-surface--frame {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+  overflow: visible;
+  pointer-events: none;
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.glass-surface--frame::before {
+  background:
+    linear-gradient(112deg, rgba(255,255,255,1) 0%, rgba(164,233,255,.62) 18%, rgba(255,255,255,.18) 42%, rgba(179,157,255,.72) 72%, rgba(255,255,255,1) 100%),
+    repeating-linear-gradient(104deg, rgba(255,255,255,.44) 0 1px, transparent 1px 9px);
+  background-size: 100% 100%, var(--glass-distortion-scale) 100%;
+}
+
+.glass-surface--frame::after {
+  box-shadow:
+    inset 5px 0 10px rgba(155,225,255,.46),
+    inset -5px 0 10px rgba(198,174,255,.42),
+    inset 0 5px 9px rgba(255,255,255,.38),
+    inset 0 -5px 10px rgba(91,126,255,.32),
+    0 0 var(--glass-glow) rgba(210,231,255,.66),
+    0 0 0 1px rgba(255,255,255,.46);
+}

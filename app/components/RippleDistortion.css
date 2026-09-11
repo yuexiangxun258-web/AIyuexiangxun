@@ -1,0 +1,47 @@
+.ripple-distortion {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.ripple-distortion canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.ripple-distortion::after {
+  content: '';
+  position: absolute;
+  z-index: 3;
+  left: var(--ripple-x, 50%);
+  top: var(--ripple-y, 50%);
+  width: 15px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  pointer-events: none;
+  background:
+    radial-gradient(circle, transparent 0 34%, rgba(255, 249, 214, .32) 38%, transparent 43%),
+    radial-gradient(circle, transparent 0 53%, rgba(174, 174, 239, .27) 58%, transparent 64%),
+    radial-gradient(circle, rgba(167, 249, 200, .08), transparent 70%);
+  box-shadow: inset 0 0 4px rgba(255, 255, 255, .08), 0 0 5px rgba(174, 174, 239, .12);
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(.88);
+  transition: opacity .18s ease, transform .2s ease;
+  animation: ripple-cursor-pulse 1.2s ease-in-out infinite alternate;
+}
+
+.ripple-distortion[data-ripple-hover='true']::after {
+  opacity: .48;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+@keyframes ripple-cursor-pulse {
+  from { filter: blur(.2px); }
+  to { filter: blur(.7px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ripple-distortion::after { display: none; }
+}

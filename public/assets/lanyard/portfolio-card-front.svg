@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="1200" viewBox="0 0 800 1200">
+  <defs>
+    <linearGradient id="holographic-base" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f7f7f4"/>
+      <stop offset=".24" stop-color="#d9f8f4"/>
+      <stop offset=".48" stop-color="#f6e4fa"/>
+      <stop offset=".72" stop-color="#dbe8ff"/>
+      <stop offset="1" stop-color="#f8f7f0"/>
+    </linearGradient>
+    <radialGradient id="holo-cyan" cx="18%" cy="20%" r="54%">
+      <stop offset="0" stop-color="#55f0e3" stop-opacity=".58"/>
+      <stop offset="1" stop-color="#55f0e3" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="holo-pink" cx="88%" cy="42%" r="58%">
+      <stop offset="0" stop-color="#ff8bdd" stop-opacity=".48"/>
+      <stop offset="1" stop-color="#ff8bdd" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="holo-blue" cx="30%" cy="92%" r="60%">
+      <stop offset="0" stop-color="#84a9ff" stop-opacity=".46"/>
+      <stop offset="1" stop-color="#84a9ff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="1200" fill="url(#holographic-base)"/>
+  <rect width="800" height="1200" fill="url(#holo-cyan)"/>
+  <rect width="800" height="1200" fill="url(#holo-pink)"/>
+  <rect width="800" height="1200" fill="url(#holo-blue)"/>
+  <rect x="54" y="54" width="692" height="1092" rx="42" fill="none" stroke="#17191a" stroke-opacity=".55" stroke-width="3"/>
+  <circle cx="400" cy="104" r="21" fill="#17191a"/>
+  <text x="72" y="390" fill="#17191a" font-family="Arial, sans-serif" font-size="96" font-weight="800">想了解更多？</text>
+  <text x="72" y="535" fill="#17191a" font-family="Arial, sans-serif" font-size="92" font-weight="800">从完整资料</text>
+  <text x="72" y="680" fill="#17191a" font-family="Arial, sans-serif" font-size="92" font-weight="800">开始。</text>
+  <line x1="72" y1="756" x2="728" y2="756" stroke="#17191a" stroke-opacity=".4" stroke-width="3"/>
+  <rect x="72" y="816" width="656" height="248" rx="32" fill="#f4f2ea" fill-opacity=".3" stroke="#17191a" stroke-width="3"/>
+  <text x="112" y="962" fill="#17191a" font-family="Arial, sans-serif" font-size="50" font-weight="700">个人简历</text>
+  <path d="M650 902v76m-26-26 26 26 26-26" fill="none" stroke="#17191a" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

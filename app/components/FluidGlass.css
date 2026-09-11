@@ -1,0 +1,97 @@
+.fluid-glass {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  isolation: isolate;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.14), rgba(174,210,220,.035) 48%, rgba(182,197,255,.1)),
+    rgba(215,239,224,.035);
+  -webkit-backdrop-filter: blur(var(--fluid-blur)) saturate(178%) contrast(124%) brightness(108%);
+  backdrop-filter: blur(var(--fluid-blur)) saturate(178%) contrast(124%) brightness(108%);
+  border: 1px solid rgba(255,255,255,.76);
+  box-shadow:
+    inset 0 2px 3px rgba(255,255,255,.72),
+    inset 0 var(--fluid-edge) var(--fluid-edge-glow) rgba(255,255,255,.22),
+    inset 0 var(--fluid-edge-negative) var(--fluid-edge-shadow) rgba(39,51,79,.3),
+    inset 2px 0 5px rgba(255,221,126,.24),
+    inset -2px 0 5px rgba(116,203,255,.28),
+    0 1px 0 rgba(22,28,40,.65),
+    0 7px 18px rgba(4,7,20,.18);
+}
+
+.fluid-glass--refractive {
+  -webkit-backdrop-filter: var(--fluid-filter) saturate(178%) contrast(124%) brightness(108%);
+  backdrop-filter: var(--fluid-filter) saturate(178%) contrast(124%) brightness(108%);
+}
+
+.fluid-glass__filter {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.fluid-glass::before,
+.fluid-glass::after,
+.fluid-glass__flow {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+}
+
+.fluid-glass::before {
+  z-index: 0;
+  inset: 0;
+  border-radius: inherit;
+  border-top: 1px solid rgba(255,255,255,.96);
+  border-bottom: 1px solid rgba(39,48,67,.7);
+  box-shadow:
+    inset var(--fluid-shift) 0 7px rgba(255,206,101,.25),
+    inset var(--fluid-shift-negative) 0 7px rgba(74,190,255,.34),
+    inset 0 2px 0 rgba(255,255,255,.58),
+    inset 0 -3px 4px rgba(28,39,67,.24);
+}
+
+.fluid-glass::after {
+  z-index: 1;
+  inset: 0;
+  opacity: .72;
+  background: linear-gradient(104deg, transparent 0 8%, rgba(255,255,255,.42) 17%, transparent 25% 53%, rgba(202,239,255,.3) 61%, transparent 70%);
+  background-size: 180% 100%;
+  mix-blend-mode: screen;
+  animation: fluid-glass-sheen 12s ease-in-out infinite alternate;
+}
+
+.fluid-glass__flow {
+  z-index: 0;
+  inset: -130% -12%;
+  opacity: .28;
+  background:
+    radial-gradient(ellipse 26% 48% at 18% 48%, rgba(194,236,255,.37), transparent 70%),
+    radial-gradient(ellipse 22% 42% at 52% 55%, rgba(202,188,255,.3), transparent 72%),
+    radial-gradient(ellipse 28% 48% at 84% 45%, rgba(216,245,255,.28), transparent 70%);
+  transform: translate3d(-4%,0,0) skewX(-10deg);
+  filter: blur(var(--fluid-blur));
+  animation: fluid-glass-flow 15s cubic-bezier(.45,.05,.55,.95) infinite alternate;
+}
+
+.fluid-glass__content {
+  position: relative;
+  z-index: 2;
+}
+
+@keyframes fluid-glass-flow {
+  from { transform: translate3d(-5%,0,0) skewX(-10deg) scaleX(var(--fluid-stretch)); }
+  to { transform: translate3d(5%,0,0) skewX(8deg) scaleX(var(--fluid-stretch)); }
+}
+
+@keyframes fluid-glass-sheen {
+  from { background-position: 100% 0; }
+  to { background-position: -80% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fluid-glass::after,
+  .fluid-glass__flow { animation: none; }
+}
