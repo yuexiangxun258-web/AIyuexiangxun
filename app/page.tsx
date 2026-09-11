@@ -218,7 +218,7 @@ const openingHeroWork = {
   title: '人物微表情的尝试',
   meta: 'SEEDANCE 2.5 · VIDEO',
   description: '以眼神、呼吸和细微表情为核心进行人物动态测试，让静态人物在短镜头中呈现自然、克制的情绪变化。',
-  src: r2Video('timeline-2026-seedance-2-5-micro-expression.mp4'),
+  src: r2Video('timeline-2026-seedance-2-5-micro-expression-web.mp4'),
   className: 'work-card work-card--landscape',
 };
 
