@@ -420,23 +420,32 @@ main video { display: block; width: 100%; height: auto; max-width: 100%; max-hei
   left: 0;
   width: 100%;
   height: 51%;
+  overflow: hidden;
+  will-change: transform;
+}
+.agency-opening-panel::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
   background-image: url('/images/opening-red-blue-liquid-4k.webp');
   background-repeat: no-repeat;
-  background-size: 100vw 100vh;
-  will-change: transform;
+  background-position: center;
+  background-size: cover;
 }
 .agency-opening-panel--top {
   top: 0;
-  background-position: center top;
   transform-origin: center top;
   animation: agency-curtain-top 1.55s cubic-bezier(.76,0,.24,1) 1.55s both;
 }
+.agency-opening-panel--top::before { top: 0; }
 .agency-opening-panel--bottom {
   bottom: 0;
-  background-position: center bottom;
   transform-origin: center bottom;
   animation: agency-curtain-bottom 1.55s cubic-bezier(.76,0,.24,1) 1.55s both;
 }
+.agency-opening-panel--bottom::before { bottom: 0; }
 .agency-opening-mark {
   position: absolute;
   z-index: 2;
@@ -845,6 +854,7 @@ main video { display: block; width: 100%; height: auto; max-width: 100%; max-hei
 }
 .hero-skip-button { position: absolute; z-index: 8; isolation: isolate; overflow: hidden; left: 50%; bottom: -70px; padding: 13px 22px; border: 0; border-radius: 24px; color: var(--ink); background: rgba(226,255,237,.58); backdrop-filter: blur(10px) saturate(125%); box-shadow: 3px 3px 0 rgba(92,95,143,.2); font-weight: 750; opacity: 0; transform: translateX(-50%); transition: bottom .8s cubic-bezier(.22,.72,.18,1),opacity .5s ease; cursor: pointer; }
 .hero-skip-label { position: relative; z-index: 2; }
+.hero-mobile-carousel-nav { display: none; }
 .hero-intro--stage-1 .hero-side-labels,.hero-intro--stage-2 .hero-side-labels { left: 76%; top: auto; bottom: 2.5%; width: 23%; opacity: 1; }
 .hero-intro--stage-2 .hero-skip-button { bottom: 3.5%; opacity: 1; }
 @media (max-width:1100px) {
@@ -895,12 +905,43 @@ main video { display: block; width: 100%; height: auto; max-width: 100%; max-hei
   .hero-work-intro { left: 3%; top: 29%; width: 68%; padding: 9px 10px; }
   .hero-video-controls { left: 7%; right: 7%; bottom: 7%; grid-template-columns: 30px minmax(52px,1fr) 56px; gap: 6px; padding: 6px; }
   .hero-media-caption span { display: none; }
+  .hero-mobile-carousel-nav {
+    position: absolute;
+    z-index: 9;
+    left: 50%;
+    top: 69%;
+    display: grid;
+    grid-template-columns: 38px auto 38px;
+    align-items: center;
+    gap: 9px;
+    padding: 7px 9px;
+    border: 1px solid rgba(255,255,255,.5);
+    border-radius: 999px;
+    color: #fff;
+    background: rgba(10,14,27,.64);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    transform: translateX(-50%);
+    white-space: nowrap;
+  }
+  .hero-mobile-carousel-nav button {
+    width: 38px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid rgba(255,255,255,.44);
+    border-radius: 999px;
+    color: #fff;
+    background: rgba(255,255,255,.14);
+  }
+  .hero-mobile-carousel-nav button:disabled { opacity: .28; }
+  .hero-mobile-carousel-nav span { font: 700 9px/1 Inter,"PingFang SC",sans-serif; letter-spacing: .03em; }
 }
 @media (prefers-reduced-motion: reduce) {
   .hero-character-layer { animation: none; }
 }
 @media (hover: none) {
   .hero-video-controls { opacity: .92; transform: translateY(0); pointer-events: auto; }
+  [data-specular='true']::after { opacity: .36; }
 }
 
 /* Dark portfolio typography with an iridescent, reflective card system. */

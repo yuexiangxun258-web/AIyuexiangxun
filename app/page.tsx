@@ -1223,6 +1223,7 @@ export default function Home() {
   const siteNavLinkRefs = useRef<Array<HTMLAnchorElement | null>>([]);
   const heroMainVideoRef = useRef<HTMLVideoElement | null>(null);
   const heroCarouselVideoRefs = useRef<Record<number, HTMLVideoElement | null>>({});
+  const heroTouchStartRef = useRef<{ x: number; y: number } | null>(null);
   const heroExitStepRef = useRef(0);
   const ledBurstIdRef = useRef(0);
   const ambientRegionsRef = useRef<LedVideoRegion[]>(openingAmbientBurst.regions);
@@ -1567,6 +1568,22 @@ export default function Home() {
       sectionBoundaryIntentRef.current = { key: '', armedAt: 0 };
       return true;
     };
+
+    // Touch devices use native continuous scrolling. The desktop experience
+    // deliberately requires a second wheel gesture at section boundaries,
+    // which would otherwise trap a phone at the end of the timeline.
+    const usesNativeTouchScroll = window.matchMedia('(hover: none), (pointer: coarse), (max-width: 760px)').matches;
+    if (usesNativeTouchScroll) {
+      heroGateUnlockedRef.current = true;
+      heroStageRef.current = 2;
+      heroWorkIndexRef.current = 0;
+      heroExitStepRef.current = 0;
+      setHeroTurn('idle');
+      setHeroStage(2);
+      setActiveHeroWorkIndex(0);
+      const frame = window.requestAnimationFrame(() => beginHeroVideo(0));
+      return () => window.cancelAnimationFrame(frame);
+    }
 
     const handleHeroWheel = (event: WheelEvent) => {
       const hero = heroIntroRef.current;
@@ -1999,6 +2016,11 @@ export default function Home() {
     }
   };
 
+  const stepHeroWork = (direction: -1 | 1) => {
+    const nextIndex = Math.max(0, Math.min(heroWorks.length - 1, heroWorkIndexRef.current + direction));
+    if (nextIndex !== heroWorkIndexRef.current) selectHeroWork(nextIndex);
+  };
+
   return (
     <main
       className="portfolio-page"
@@ -2043,7 +2065,24 @@ export default function Home() {
       </header>
 
       <section className="hero section-shell" id="top">
-        <div className={`hero-intro hero-intro--stage-${heroStage} hero-intro--turn-${heroTurn}`} ref={heroIntroRef}>
+        <div
+          className={`hero-intro hero-intro--stage-${heroStage} hero-intro--turn-${heroTurn}`}
+          ref={heroIntroRef}
+          onPointerDown={(event) => {
+            if (event.pointerType !== 'touch') return;
+            if (event.target instanceof Element && event.target.closest('button, input, a')) return;
+            heroTouchStartRef.current = { x: event.clientX, y: event.clientY };
+          }}
+          onPointerUp={(event) => {
+            if (event.pointerType !== 'touch' || !heroTouchStartRef.current || heroStageRef.current !== 2) return;
+            const deltaX = event.clientX - heroTouchStartRef.current.x;
+            const deltaY = event.clientY - heroTouchStartRef.current.y;
+            heroTouchStartRef.current = null;
+            if (Math.abs(deltaX) < 48 || Math.abs(deltaX) <= Math.abs(deltaY)) return;
+            stepHeroWork(deltaX < 0 ? 1 : -1);
+          }}
+          onPointerCancel={() => { heroTouchStartRef.current = null; }}
+        >
           <div className="hero-ripple-layer" aria-hidden="true">
             <RippleDistortion
               src="/images/hero-curved-grid.svg?v=3"
@@ -2251,6 +2290,14 @@ export default function Home() {
               <WarpText as="h2" text={heroWorks[activeHeroWorkIndex].title} strength={0.92} radius={0.56} refraction={0.014} />
               <p className="hero-text-sheen">{heroWorks[activeHeroWorkIndex].description}</p>
             </aside>
+          ) : null}
+
+          {heroStage === 2 ? (
+            <div className="hero-mobile-carousel-nav" aria-label="首页作品切换">
+              <button type="button" onClick={() => stepHeroWork(-1)} disabled={activeHeroWorkIndex === 0} aria-label="上一个作品">←</button>
+              <span>{activeHeroWorkIndex + 1} / {heroWorks.length} · 左右滑动</span>
+              <button type="button" onClick={() => stepHeroWork(1)} disabled={activeHeroWorkIndex === heroWorks.length - 1} aria-label="下一个作品">→</button>
+            </div>
           ) : null}
 
           <button
