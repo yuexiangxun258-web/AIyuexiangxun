@@ -23,6 +23,8 @@ type GalleryImage = { src: string; alt: string };
 const videoPreview = (src: string) => src;
 const R2_VIDEO_BASE_URL = 'https://pub-9b96ac52d99f4c28a93088ba636ccac8.r2.dev/videos';
 const r2Video = (filename: string) => `${R2_VIDEO_BASE_URL}/${filename}`;
+const MOBILE_PAGE_MEDIA = '(max-width: 760px)';
+const NATIVE_TOUCH_SCROLL_MEDIA = '(hover: none), (pointer: coarse), (max-width: 760px)';
 
 type DeferredVideoProps = Omit<VideoHTMLAttributes<HTMLVideoElement>, 'src'> & {
   src: string;
@@ -1347,7 +1349,9 @@ export default function Home() {
     downloadsReturnArmedRef.current = false;
     heroGateUnlockedRef.current = !isHero;
     window.history.replaceState(null, '', `#${targetId}`);
-    const top = target.getBoundingClientRect().top + window.scrollY;
+    const top = window.matchMedia(MOBILE_PAGE_MEDIA).matches
+      ? 0
+      : target.getBoundingClientRect().top + window.scrollY;
     boundarySnapInProgressRef.current = true;
     previousScrollYRef.current = top;
     window.scrollTo({ top, behavior: 'auto' });
@@ -1356,6 +1360,21 @@ export default function Home() {
         boundarySnapInProgressRef.current = false;
       });
     });
+  }, [activateSection]);
+
+  useEffect(() => {
+    const mobilePages = window.matchMedia(MOBILE_PAGE_MEDIA);
+    if (!mobilePages.matches) return;
+    const sectionIds = ['top', 'timeline', 'process', 'downloads'];
+    const activateHashPage = () => {
+      const requestedId = location.hash.replace('#', '');
+      const targetId = sectionIds.includes(requestedId) ? requestedId : 'top';
+      activateSection(targetId);
+      window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'auto' }));
+    };
+    activateHashPage();
+    window.addEventListener('hashchange', activateHashPage);
+    return () => window.removeEventListener('hashchange', activateHashPage);
   }, [activateSection]);
 
   useEffect(() => {
@@ -1450,8 +1469,9 @@ export default function Home() {
       if (!timelineSection || !yearArchive) return;
       const timelineRect = timelineSection.getBoundingClientRect();
       const archiveRect = yearArchive.getBoundingClientRect();
+      const mobilePages = window.matchMedia(MOBILE_PAGE_MEDIA).matches;
       const shouldShow = location.hash === '#timeline'
-        && archiveRect.bottom <= 76
+        && (mobilePages || archiveRect.bottom <= 76)
         && timelineRect.bottom > 80
         && timelineRect.top < window.innerHeight;
       setIsTimelineYearRailVisible(shouldShow);
@@ -1572,7 +1592,7 @@ export default function Home() {
     // Touch devices use native continuous scrolling. The desktop experience
     // deliberately requires a second wheel gesture at section boundaries,
     // which would otherwise trap a phone at the end of the timeline.
-    const usesNativeTouchScroll = window.matchMedia('(hover: none), (pointer: coarse), (max-width: 760px)').matches;
+    const usesNativeTouchScroll = window.matchMedia(NATIVE_TOUCH_SCROLL_MEDIA).matches;
     if (usesNativeTouchScroll) {
       heroGateUnlockedRef.current = true;
       heroStageRef.current = 2;

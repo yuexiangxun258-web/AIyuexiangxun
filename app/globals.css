@@ -1435,3 +1435,105 @@ main video { display: block; width: 100%; height: auto; max-width: 100%; max-hei
   .timeline-year-hover-content,
   .site-nav-slider { transition: none; }
 }
+
+/* Phone layout: four isolated pages, bottom navigation, and viewport-sized cards. */
+@media (max-width: 760px) {
+  html { scroll-snap-type: y proximity; }
+  body { overflow-x: clip; padding-bottom: env(safe-area-inset-bottom); }
+
+  .portfolio-page > section.section-is-paused { display: none; }
+  .portfolio-page > section:not(.section-is-paused) { display: block; }
+
+  .site-header {
+    top: auto;
+    bottom: max(8px, env(safe-area-inset-bottom));
+    width: calc(100% - 16px);
+    height: 58px;
+    padding: 6px;
+    grid-template-columns: 1fr;
+  }
+  .site-nav {
+    grid-column: 1;
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 3px;
+    font-size: clamp(9px, 2.55vw, 11px);
+  }
+  .site-nav-slider { display: none; }
+  .site-nav a {
+    display: grid;
+    min-width: 0;
+    min-height: 44px;
+    padding: 0 3px;
+    place-items: center;
+    border-radius: 999px;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .site-nav a.is-active { background: rgba(255,255,255,.9); box-shadow: 0 5px 16px rgba(14,23,42,.14); }
+
+  .hero.section-shell,
+  .download-section.section-shell { width: 100%; margin: 0; }
+  .hero { padding: 0; }
+  .hero-intro { height: 100svh; min-height: 100svh; border-radius: 0; }
+  .hero-skip-button { display: none; }
+
+  .timeline-section { min-height: 100svh; padding: 0 0 86px; }
+  .timeline-section > .section-shell { padding-top: 24px; }
+  .timeline-year-archive { display: none; }
+  .timeline-year-rail,
+  .timeline-year-rail.is-visible {
+    position: sticky;
+    z-index: 19;
+    top: 0;
+    left: auto;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 34px repeat(5, minmax(0, 1fr));
+    gap: 4px;
+    padding: 7px 8px;
+    border-radius: 0 0 18px 18px;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: none;
+  }
+  .timeline-year-rail-title { display: grid; padding: 0; place-items: center; font-size: 8px; }
+  .timeline-year-rail button {
+    min-height: 42px;
+    padding: 5px 2px;
+    border-radius: 12px;
+    transform: none;
+  }
+  .timeline-year-rail strong { font-size: clamp(9px, 2.8vw, 12px); }
+  .timeline-year-rail small { display: none; }
+
+  .timeline-list--archive { padding-bottom: 0; }
+  .timeline-item,
+  .timeline-gallery-group,
+  .timeline-storyboard-panel,
+  .timeline-video-result,
+  .timeline-video-case,
+  .timeline-case-asset-group,
+  .timeline-logo-videos,
+  .process-card,
+  .latest-grid {
+    min-height: calc(100svh - 82px);
+    scroll-margin-top: 58px;
+    scroll-snap-align: start;
+    scroll-snap-stop: normal;
+  }
+  .timeline-item { border-radius: 22px; }
+  .timeline-gallery-group,
+  .timeline-storyboard-panel,
+  .timeline-video-result,
+  .timeline-video-case,
+  .timeline-case-asset-group,
+  .timeline-logo-videos { display: flex; flex-direction: column; justify-content: center; }
+  .process-section { padding-top: 34px; padding-bottom: 86px; }
+  .process-track { gap: 18px; }
+  .process-card { justify-content: center; }
+  .latest-section { min-height: 100svh; padding: 24px 0 86px; }
+  .download-section { height: 100svh; min-height: 100svh; padding-bottom: 72px; }
+}
