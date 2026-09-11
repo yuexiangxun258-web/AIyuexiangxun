@@ -650,7 +650,7 @@ main video { display: block; width: 100%; height: auto; max-width: 100%; max-hei
   .timeline-year-rail { display: none; }
 }
 
-@media (max-width: 580px) {
+@media (max-width: 760px) {
   .site-header { height: 62px; }
   .header-cta { font-size: 10px; }
   .hero { min-height: 0; padding-top: 14px; }
@@ -867,21 +867,21 @@ main video { display: block; width: 100%; height: auto; max-width: 100%; max-hei
   .hero-tool-row { grid-template-columns: 65px 1fr; gap: 8px; }
   .hero-tool-row strong { font-size: 12px; padding: 8px 4px; }
 }
-@media (max-width:580px) {
+@media (max-width:760px) {
   .hero-particle-title { left: -18%; top: 1%; width: 136%; height: 36%; opacity: .86; }
   .site-header { top: 8px; width: calc(100% - 16px); height: 56px; padding: 0 12px; grid-template-columns: auto 1fr; }
   .brand { font-size: 10px; }
-  .site-nav { justify-self: center; gap: 12px; font-size: 10px; }
+  .site-nav { display: flex; justify-self: center; gap: clamp(7px,2.2vw,14px); font-size: clamp(9px,2.4vw,11px); }
   .hero-intro { min-height: 900px; border-radius: 0; }
-  .hero-title-block { left: 48%; top: 15%; width: 49%; text-align: left; }
+  .hero-title-block { left: 43%; top: 15%; width: 55%; text-align: left; }
   .hero-wordmark { font-size: clamp(34px,9vw,54px); }
   .hero-wordmark-sparkles { width: 34px; height: 34px; }
   .hero-portfolio-line > span { font-size: clamp(28px,7.4vw,45px); }
-  .hero-portfolio-line em { font-size: 12px; }
+  .hero-portfolio-line em { display: none; }
   .hero-title-tools { margin-top: 18px; }
   .hero-title-tools .hero-tool-row { grid-template-columns: 58px minmax(0,1fr); gap: 7px; }
   .hero-title-tools .hero-tool-row strong { padding: 7px 6px; font-size: 10px; }
-  .hero-title-tools .hero-tool-row span { font-size: 8px; line-height: 1.35; }
+  .hero-title-tools .hero-tool-row span { min-width: 0; overflow-wrap: anywhere; white-space: normal; font-size: clamp(7px,1.9vw,9px); line-height: 1.35; }
   .hero h1 { font-size: 54px; }
   .hero-character { width: 38%; left: -6%; height: 58%; }
   .hero-media-slot { inset: 0; width: 100%; height: 100%; }
@@ -1227,7 +1227,7 @@ main video { display: block; width: 100%; height: auto; max-width: 100%; max-hei
   [data-specular='true']::after { transition: none; }
 }
 
-@media (max-width: 580px) {
+@media (max-width: 760px) {
   .timeline-gallery-group--project-main .timeline-gallery-stage { grid-template-columns: 1fr; }
   .timeline-gallery-group--project-scenes .timeline-gallery-stage { grid-template-columns: repeat(2,minmax(0,1fr)); }
   .hero-work-intro h2 { font-size: clamp(23px, 7vw, 34px); }

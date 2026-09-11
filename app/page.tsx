@@ -337,13 +337,22 @@ function CurvedLedVideo({
     const context = canvas.getContext('2d');
     if (!context) return;
 
-    // The wall projection is intentionally blurred, so a smaller backing
-    // canvas and fewer strips keep the cylindrical bend while avoiding a
-    // full-resolution redraw on every display refresh.
-    const width = 960;
-    const height = 540;
-    if (canvas.width !== width) canvas.width = width;
-    if (canvas.height !== height) canvas.height = height;
+    // Match the backing canvas to the displayed aspect ratio. Keeping the
+    // longer edge capped preserves the video proportions on portrait phones
+    // without increasing the number of pixels rendered on desktop.
+    let width = 960;
+    let height = 540;
+    const resizeCanvas = () => {
+      const bounds = canvas.parentElement?.getBoundingClientRect();
+      const aspect = Math.max(0.35, Math.min(3, (bounds?.width ?? 960) / Math.max(1, bounds?.height ?? 540)));
+      const nextWidth = aspect >= 1 ? 960 : Math.max(336, Math.round(960 * aspect));
+      const nextHeight = aspect >= 1 ? Math.max(336, Math.round(960 / aspect)) : 960;
+      width = nextWidth;
+      height = nextHeight;
+      if (canvas.width !== width) canvas.width = width;
+      if (canvas.height !== height) canvas.height = height;
+    };
+    resizeCanvas();
     let frame = 0;
 
     const warpY = (y: number, x: number) => {
@@ -372,13 +381,26 @@ function CurvedLedVideo({
 
     const drawWarpedVideo = (video: HTMLVideoElement, regions: LedVideoRegion[], opacity = 1) => {
       if (video.readyState < 2 || video.videoWidth <= 0 || regions.length === 0) return;
+      const targetAspect = width / Math.max(1, height);
+      const sourceAspect = video.videoWidth / Math.max(1, video.videoHeight);
+      let sourceX = 0;
+      let sourceY = 0;
+      let sourceWidth = video.videoWidth;
+      let sourceHeight = video.videoHeight;
+      if (sourceAspect > targetAspect) {
+        sourceWidth = video.videoHeight * targetAspect;
+        sourceX = (video.videoWidth - sourceWidth) / 2;
+      } else if (sourceAspect < targetAspect) {
+        sourceHeight = video.videoWidth / targetAspect;
+        sourceY = (video.videoHeight - sourceHeight) / 2;
+      }
       context.save();
       context.globalAlpha = opacity;
       context.beginPath();
       regions.forEach(addRegionPath);
       context.clip();
       const strips = 40;
-      const sourceStrip = video.videoWidth / strips;
+      const sourceStrip = sourceWidth / strips;
       const destinationStrip = width / strips;
       for (let strip = 0; strip < strips; strip += 1) {
         const x = strip * destinationStrip;
@@ -387,7 +409,7 @@ function CurvedLedVideo({
         const scaleY = 1 + .34 * distance * distance;
         const destinationHeight = height * scaleY;
         const destinationY = (height - destinationHeight) / 2;
-        context.drawImage(video, strip * sourceStrip, 0, sourceStrip + 1, video.videoHeight, x, destinationY, destinationStrip + 1, destinationHeight);
+        context.drawImage(video, sourceX + strip * sourceStrip, sourceY, sourceStrip + 1, sourceHeight, x, destinationY, destinationStrip + 1, destinationHeight);
       }
       context.restore();
     };
@@ -482,6 +504,8 @@ function CurvedLedVideo({
       if (video.readyState >= 1) startPlayback();
       return () => video.removeEventListener('loadedmetadata', startPlayback);
     });
+    const resizeObserver = new ResizeObserver(resizeCanvas);
+    if (canvas.parentElement) resizeObserver.observe(canvas.parentElement);
     frame = window.requestAnimationFrame(draw);
     const mountedVideos = burst.tracks
       .map((track) => videoRefs.current[track.src])
@@ -489,6 +513,7 @@ function CurvedLedVideo({
     return () => {
       cleanups.forEach((cleanup) => cleanup());
       window.cancelAnimationFrame(frame);
+      resizeObserver.disconnect();
       mountedVideos.forEach((video) => {
         video.pause();
         video.muted = true;
