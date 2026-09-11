@@ -1252,6 +1252,7 @@ export default function Home() {
   const [activeHeroWorkIndex, setActiveHeroWorkIndex] = useState(0);
   const [heroTurn, setHeroTurn] = useState<HeroTurn>('idle');
   const [heroPlayback, setHeroPlayback] = useState({ currentTime: 0, duration: 0, paused: true, muted: false });
+  const [isMobileHeroEngaged, setIsMobileHeroEngaged] = useState(false);
   const [isHeroSurfaceActive, setIsHeroSurfaceActive] = useState(true);
   const [activeTimelineYear, setActiveTimelineYear] = useState(timeline[0].year);
   const [isTimelineYearRailVisible, setIsTimelineYearRailVisible] = useState(false);
@@ -1328,6 +1329,7 @@ export default function Home() {
     }
     activateSection(targetId);
     if (isHero) {
+      if (window.matchMedia(MOBILE_PAGE_MEDIA).matches) setIsMobileHeroEngaged(false);
       timelineReturnArmedRef.current = false;
       heroStageRef.current = 2;
       heroWorkIndexRef.current = 0;
@@ -1380,6 +1382,7 @@ export default function Home() {
   useEffect(() => {
     const unlockHeroSound = () => {
       if (heroStageRef.current !== 2 || window.scrollY > 4 || location.hash === '#timeline') return;
+      if (window.matchMedia(MOBILE_PAGE_MEDIA).matches) return;
       const video = heroCarouselVideoRefs.current[heroWorkIndexRef.current];
       if (video) startHeroVideoPlayback(video);
     };
@@ -1601,7 +1604,26 @@ export default function Home() {
       setHeroTurn('idle');
       setHeroStage(2);
       setActiveHeroWorkIndex(0);
-      const frame = window.requestAnimationFrame(() => beginHeroVideo(0));
+      const isMobilePage = window.matchMedia(MOBILE_PAGE_MEDIA).matches;
+      if (isMobilePage) setIsMobileHeroEngaged(false);
+      const frame = window.requestAnimationFrame(() => {
+        if (!isMobilePage) {
+          beginHeroVideo(0);
+          return;
+        }
+        const video = heroCarouselVideoRefs.current[0];
+        if (!video) return;
+        heroMainVideoRef.current = video;
+        video.dataset.playbackRequested = 'false';
+        video.pause();
+        video.muted = true;
+        setHeroPlayback({
+          currentTime: video.currentTime,
+          duration: Number.isFinite(video.duration) ? video.duration : 0,
+          paused: true,
+          muted: true,
+        });
+      });
       return () => window.cancelAnimationFrame(frame);
     }
 
@@ -1963,7 +1985,14 @@ export default function Home() {
         video.pause();
         video.muted = true;
       } else if (heroStage === 2 && Number(index) === activeHeroWorkIndex) {
-        startHeroVideoPlayback(video);
+        const waitForMobilePlay = window.matchMedia(MOBILE_PAGE_MEDIA).matches && !isMobileHeroEngaged;
+        if (waitForMobilePlay) {
+          video.dataset.playbackRequested = 'false';
+          video.pause();
+          video.muted = true;
+        } else {
+          startHeroVideoPlayback(video);
+        }
         setHeroPlayback({
           currentTime: video.currentTime,
           duration: Number.isFinite(video.duration) ? video.duration : 0,
@@ -1979,7 +2008,7 @@ export default function Home() {
         video.muted = true;
       }
     });
-  }, [activeHeroWorkIndex, heroStage, isHeroSurfaceActive]);
+  }, [activeHeroWorkIndex, heroStage, isHeroSurfaceActive, isMobileHeroEngaged]);
 
   const pauseOtherModelVideos = (activeVideo: HTMLVideoElement) => {
     document.querySelectorAll<HTMLVideoElement>('.timeline-model-video-strip video').forEach((video) => {
@@ -2023,6 +2052,7 @@ export default function Home() {
 
   const selectHeroWork = (index: number) => {
     if (heroStageRef.current !== 2 || index === heroWorkIndexRef.current) return;
+    if (window.matchMedia(MOBILE_PAGE_MEDIA).matches) setIsMobileHeroEngaged(true);
     const previousIndex = heroWorkIndexRef.current;
     heroWorkIndexRef.current = index;
     heroExitStepRef.current = 0;
@@ -2086,15 +2116,18 @@ export default function Home() {
 
       <section className="hero section-shell" id="top">
         <div
-          className={`hero-intro hero-intro--stage-${heroStage} hero-intro--turn-${heroTurn}`}
+          className={`hero-intro hero-intro--stage-${heroStage} hero-intro--turn-${heroTurn}${isMobileHeroEngaged ? ' hero-intro--mobile-engaged' : ''}`}
           ref={heroIntroRef}
           onPointerDown={(event) => {
-            if (event.pointerType !== 'touch') return;
+            if (!window.matchMedia(MOBILE_PAGE_MEDIA).matches) return;
+            if (event.pointerType !== 'touch' && event.pointerType !== 'mouse') return;
+            if (!(event.target instanceof Element) || !event.target.closest('.hero-carousel-card--active')) return;
             if (event.target instanceof Element && event.target.closest('button, input, a')) return;
             heroTouchStartRef.current = { x: event.clientX, y: event.clientY };
           }}
           onPointerUp={(event) => {
-            if (event.pointerType !== 'touch' || !heroTouchStartRef.current || heroStageRef.current !== 2) return;
+            if (!window.matchMedia(MOBILE_PAGE_MEDIA).matches) return;
+            if ((event.pointerType !== 'touch' && event.pointerType !== 'mouse') || !heroTouchStartRef.current || heroStageRef.current !== 2) return;
             const deltaX = event.clientX - heroTouchStartRef.current.x;
             const deltaY = event.clientY - heroTouchStartRef.current.y;
             heroTouchStartRef.current = null;
@@ -2197,7 +2230,7 @@ export default function Home() {
                   >
                     <video
                       ref={(video) => { heroCarouselVideoRefs.current[index] = video; }}
-                      autoPlay={isActive || isOpening}
+                      autoPlay={isOpening || (isActive && isMobileHeroEngaged)}
                       muted={isOpening || !isActive || heroStage !== 2}
                       playsInline
                       controlsList="nodownload noremoteplayback"
@@ -2218,12 +2251,20 @@ export default function Home() {
                         }
                         if (heroStageRef.current === 2 && index === heroWorkIndexRef.current) {
                           heroMainVideoRef.current = video;
-                          startHeroVideoPlayback(video);
+                          if (window.matchMedia(MOBILE_PAGE_MEDIA).matches && !isMobileHeroEngaged) {
+                            video.dataset.playbackRequested = 'false';
+                            video.pause();
+                            video.muted = true;
+                          } else {
+                            startHeroVideoPlayback(video);
+                          }
                         } else if (heroStageRef.current === 0 && index === 0) {
                           video.muted = true;
                           void video.play().catch(() => undefined);
                         } else {
-                          video.currentTime = 0;
+                          video.currentTime = window.matchMedia(MOBILE_PAGE_MEDIA).matches && isVisible
+                            ? Math.min(.12, Number.isFinite(video.duration) ? video.duration : .12)
+                            : 0;
                           video.pause();
                         }
                       }}
@@ -2257,7 +2298,10 @@ export default function Home() {
                           onClick={() => {
                             const video = heroCarouselVideoRefs.current[index];
                             if (!video) return;
-                            if (video.paused) startHeroVideoPlayback(video);
+                            if (video.paused) {
+                              if (window.matchMedia(MOBILE_PAGE_MEDIA).matches) setIsMobileHeroEngaged(true);
+                              startHeroVideoPlayback(video);
+                            }
                             else video.pause();
                           }}
                           aria-label={heroPlayback.paused ? '播放视频' : '暂停视频'}
