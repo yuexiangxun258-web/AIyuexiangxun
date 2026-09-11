@@ -50,7 +50,7 @@ main video { display: block; width: 100%; height: auto; max-width: 100%; max-hei
 .hero-ripple-layer .ripple-distortion { position: absolute; inset: 0; width: 100%; height: 100%; }
 .hero-led-video-burst { position: absolute; z-index: 0; inset: 0; pointer-events: none; }
 .hero-led-video-screen { position: absolute; inset: -1.5%; overflow: hidden; opacity: 0; clip-path: inset(0 100% 0 0); transform-origin: left center; will-change: opacity,clip-path; background: #070d2d url('/images/hero-video-poster.jpg') center / cover no-repeat; animation: led-video-reveal 1.42s cubic-bezier(.2,.76,.18,1) forwards; }
-.hero-led-video-screen canvas { display: block; position: relative; z-index: 0; width: 103%; height: 103%; filter: saturate(.92) contrast(1.05) brightness(.78); opacity: .84; mix-blend-mode: normal; }
+.hero-led-video-screen canvas { display: block; position: relative; z-index: 0; width: 103%; height: 103%; filter: saturate(.92) contrast(1.05) brightness(.7); opacity: 1; mix-blend-mode: normal; }
 .hero-led-video-screen > video { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 .hero-led-video-screen::after { content: ''; position: absolute; z-index: 3; inset: 0; pointer-events: none; background: linear-gradient(rgba(55,83,180,.08),rgba(4,9,35,.18)); opacity: .5; mix-blend-mode: multiply; }
 @keyframes led-video-reveal {
@@ -64,7 +64,7 @@ main video { display: block; width: 100%; height: auto; max-width: 100%; max-hei
 @keyframes led-video-sweep { from { left: -18%; } to { left: 104%; } }
 .hero-led-video-burst--carousel .hero-led-video-screen { animation: led-video-hold .72s ease-out forwards; }
 .hero-led-video-burst--carousel .hero-led-video-screen::before { content: ''; position: absolute; z-index: 2; inset: 0; pointer-events: none; background: radial-gradient(ellipse 48% 78% at 50% 50%,rgba(167,249,200,.02) 0 46%,rgba(167,249,200,.18) 66%,rgba(151,231,188,.54) 84%,rgba(126,207,169,.82) 100%); }
-.hero-led-video-burst--carousel .hero-led-video-screen canvas { filter: saturate(.86) contrast(1.04) brightness(.86); opacity: .86; }
+.hero-led-video-burst--carousel .hero-led-video-screen canvas { filter: saturate(.86) contrast(1.04) brightness(.76); opacity: 1; }
 .hero-led-video-burst--carousel.hero-led-video-burst--turn-forward .hero-led-video-screen canvas { animation: hero-wall-counter-forward 1.15s cubic-bezier(.16,.82,.18,1); transform-origin: center; }
 .hero-led-video-burst--carousel.hero-led-video-burst--turn-backward .hero-led-video-screen canvas { animation: hero-wall-counter-backward 1.15s cubic-bezier(.16,.82,.18,1); transform-origin: center; }
 @keyframes hero-wall-counter-forward { 0% { transform: perspective(1500px) rotateY(0); } 58% { transform: perspective(1500px) rotateY(24deg) scale(1.04); } 100% { transform: perspective(1500px) rotateY(0); } }
@@ -122,6 +122,7 @@ main video { display: block; width: 100%; height: auto; max-width: 100%; max-hei
 
 .timeline-section { position: relative; isolation: isolate; min-height: 100svh; overflow: clip; background: #91cfd5; color: var(--ink); padding: clamp(82px, 9svh, 118px) 0 clamp(22px, 3svh, 38px); scroll-snap-align: start; scroll-snap-stop: always; }
 .portfolio-balatro-background { position: absolute; z-index: 0; inset: 0; overflow: clip; pointer-events: none; }
+.portfolio-balatro-background::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 18% 24%, rgba(255,79,198,.7), transparent 34%), radial-gradient(circle at 78% 68%, rgba(34,230,233,.8), transparent 40%), linear-gradient(135deg,#10162c,#376b83 54%,#91cfd5); background-size: 145% 145%; animation: section-background-drift 7s ease-in-out infinite alternate; }
 .portfolio-balatro-background .balatro-container { position: sticky; top: 0; width: 100%; height: 100svh; contain: strict; backface-visibility: hidden; transform: translateZ(0); }
 .timeline-section > .section-shell { position: relative; z-index: 1; }
 .eyebrow--light { color: var(--muted); }
@@ -532,9 +533,9 @@ main video { display: block; width: 100%; height: auto; max-width: 100%; max-hei
 .text-link { margin-top: 24px; padding: 0 0 4px; border: 0; border-bottom: 1px solid #69685f; color: #f1efe8; background: none; font-size: 11px; cursor: default; opacity: .7; }
 
 .innovation-page { position: relative; isolation: isolate; background: var(--acid); scroll-snap-align: start; scroll-snap-stop: always; }
-.innovation-page-background { position: fixed; z-index: 0; inset: 0; width: 100%; height: 100svh; overflow: hidden; pointer-events: none; visibility: hidden; opacity: 0; clip-path: inset(var(--innovation-clip-top, 100%) 0 var(--innovation-clip-bottom, 0px) 0); background: var(--acid); }
-.innovation-page-background[data-visible='true'] { visibility: visible; opacity: 1; }
-.innovation-page-background > .iridescence { position: absolute; inset: 0; height: 100%; opacity: .88; filter: saturate(1.08) brightness(1.08); }
+.innovation-page-background { position: absolute; z-index: 0; inset: 0; width: 100%; overflow: clip; pointer-events: none; visibility: visible; opacity: 1; background: radial-gradient(circle at 16% 22%, rgba(255,124,218,.5), transparent 34%), radial-gradient(circle at 82% 70%, rgba(107,141,255,.52), transparent 38%), linear-gradient(135deg,#dfff79,#92efe5 52%,#e7c8ff); background-size: 150% 150%; animation: section-background-drift 7s ease-in-out infinite alternate; }
+.innovation-page-background > .iridescence { position: sticky; top: 0; height: 100svh; opacity: .88; filter: saturate(1.08) brightness(1.08); }
+@keyframes section-background-drift { from { background-position: 0% 12%; } to { background-position: 100% 88%; } }
 .innovation-page > .process-section,
 .innovation-page > .latest-section { position: relative; z-index: 1; scroll-snap-align: none; scroll-snap-stop: normal; }
 .innovation-page > .latest-section { padding-top: 0; background: transparent; }

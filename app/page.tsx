@@ -412,16 +412,15 @@ function CurvedLedVideo({
         source
         && currentTrack
         && source.getAttribute('src') === currentTrack.src
-        && source.readyState >= 2,
+        && source.readyState >= 2
+        && !source.paused,
       );
       const currentVideo = sourceMatchesCurrent
         ? source
         : currentTrack ? videoRefs.current[currentTrack.src] : null;
-      if (burst.mode === 'carousel' && source?.readyState && currentVideo?.readyState) {
+      if (burst.mode === 'carousel' && source?.readyState && !source.paused && currentVideo?.readyState) {
         if (Math.abs(currentVideo.currentTime - source.currentTime) > .08) currentVideo.currentTime = source.currentTime;
-        if (source.paused) {
-          if (!currentVideo.paused) currentVideo.pause();
-        } else if (currentVideo.paused) {
+        if (currentVideo.paused) {
           void currentVideo.play().catch(() => undefined);
         }
       }
@@ -472,7 +471,6 @@ function CurvedLedVideo({
       const video = videoRefs.current[track.src];
       if (!video) return () => undefined;
       const startPlayback = () => {
-        if (syncSourceRef.current?.getAttribute('src') === track.src) return;
         const elapsed = track.startedAt > 0
           ? Math.max(0, (Date.now() - track.startedAt) / 1000)
           : 0;
@@ -2021,29 +2019,28 @@ export default function Home() {
 
       <section className="hero section-shell" id="top">
         <div className={`hero-intro hero-intro--stage-${heroStage} hero-intro--turn-${heroTurn}`} ref={heroIntroRef}>
-          {isHeroSurfaceActive ? (
-            <div className="hero-ripple-layer" aria-hidden="true">
-              <RippleDistortion
-                src="/images/hero-curved-grid.svg?v=3"
-                brushSize={38}
-                strength={0.1}
-                swirl={0.45}
-                rings={2}
-                spread={1.8}
-                fade={1.35}
-                spacing={16}
-                dispersion={0.025}
-                glint={0.28}
-                tint="#6688ff"
-                tintAmount={0.12}
-                highlightColor="#c9efff"
-                grayscale
-                overlayOnly
-                trigger="both"
-                quality="low"
-              />
-            </div>
-          ) : null}
+          <div className="hero-ripple-layer" aria-hidden="true">
+            <RippleDistortion
+              src="/images/hero-curved-grid.svg?v=3"
+              brushSize={38}
+              strength={0.1}
+              swirl={0.45}
+              rings={2}
+              spread={1.8}
+              fade={1.35}
+              spacing={16}
+              dispersion={0.025}
+              glint={0.28}
+              tint="#6688ff"
+              tintAmount={0.12}
+              highlightColor="#c9efff"
+              grayscale
+              overlayOnly
+              trigger="both"
+              quality="low"
+              enabled={isHeroSurfaceActive}
+            />
+          </div>
           <div
             className={`hero-led-video-burst hero-led-video-burst--${ledVideoBurst.mode} hero-led-video-burst--turn-${ledVideoBurst.turn}`}
             key={ledVideoBurst.mode === 'carousel' ? ledVideoBurst.id : 'ambient'}
@@ -2291,22 +2288,20 @@ export default function Home() {
           ))}
         </nav>
         <div className="portfolio-balatro-background" aria-hidden="true">
-          {activeSectionId === 'timeline' ? (
-            <Balatro
-              spinRotation={-1.65}
-              spinSpeed={2.45}
-              color1="#22e6e9"
-              color2="#ff4fc6"
-              color3="#10162c"
-              contrast={3.6}
-              lighting={0.22}
-              spinAmount={0.18}
-              pixelFilter={2800}
-              spinEase={0.8}
-              isRotate={false}
-              mouseInteraction
-            />
-          ) : null}
+          <Balatro
+            spinRotation={-1.65}
+            spinSpeed={2.45}
+            color1="#22e6e9"
+            color2="#ff4fc6"
+            color3="#10162c"
+            contrast={3.6}
+            lighting={0.22}
+            spinAmount={0.18}
+            pixelFilter={2800}
+            spinEase={0.8}
+            isRotate={false}
+            mouseInteraction
+          />
         </div>
         <div className="section-shell">
           <div className="section-heading timeline-section-heading">
@@ -2667,14 +2662,12 @@ export default function Home() {
 
       <section className="innovation-page" id="process" aria-labelledby="innovation-page-title">
         <div className="innovation-page-background" aria-hidden="true">
-          {activeSectionId === 'process' ? (
-            <Iridescence
-              color={[1, 1, 1]}
-              mouseReact={false}
-              amplitude={0.1}
-              speed={1.0}
-            />
-          ) : null}
+          <Iridescence
+            color={[1, 1, 1]}
+            mouseReact={false}
+            amplitude={0.1}
+            speed={1.0}
+          />
         </div>
         <section className="process-section section-shell">
           <div className="section-heading">
