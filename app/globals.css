@@ -49,7 +49,7 @@ main video { display: block; width: 100%; height: auto; max-width: 100%; max-hei
 .hero-ripple-layer { position: absolute; z-index: 12; inset: 0; overflow: hidden; pointer-events: none; opacity: .92; mix-blend-mode: screen; filter: contrast(1.12) saturate(1.18); }
 .hero-ripple-layer .ripple-distortion { position: absolute; inset: 0; width: 100%; height: 100%; }
 .hero-led-video-burst { position: absolute; z-index: 0; inset: 0; pointer-events: none; }
-.hero-led-video-screen { position: absolute; inset: -1.5%; overflow: hidden; opacity: 0; clip-path: inset(0 100% 0 0); transform-origin: left center; will-change: opacity,clip-path; animation: led-video-reveal 1.42s cubic-bezier(.2,.76,.18,1) forwards; }
+.hero-led-video-screen { position: absolute; inset: -1.5%; overflow: hidden; opacity: 0; clip-path: inset(0 100% 0 0); transform-origin: left center; will-change: opacity,clip-path; background: #070d2d url('/images/hero-video-poster.jpg') center / cover no-repeat; animation: led-video-reveal 1.42s cubic-bezier(.2,.76,.18,1) forwards; }
 .hero-led-video-screen canvas { display: block; position: relative; z-index: 0; width: 103%; height: 103%; filter: saturate(.92) contrast(1.05) brightness(.78); opacity: .84; mix-blend-mode: normal; }
 .hero-led-video-screen > video { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 .hero-led-video-screen::after { content: ''; position: absolute; z-index: 3; inset: 0; pointer-events: none; background: linear-gradient(rgba(55,83,180,.08),rgba(4,9,35,.18)); opacity: .5; mix-blend-mode: multiply; }

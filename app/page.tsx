@@ -511,7 +511,7 @@ function CurvedLedVideo({
           controlsList="nodownload noremoteplayback"
           disablePictureInPicture
           disableRemotePlayback
-          preload="metadata"
+          preload="auto"
           loop
           src={track.src}
         />
@@ -2122,6 +2122,7 @@ export default function Home() {
                       controlsList="nodownload noremoteplayback"
                       disablePictureInPicture
                       disableRemotePlayback
+                      poster={index === 0 ? '/images/hero-video-poster.jpg' : undefined}
                       preload={(isActive && heroStage === 2) || isOpening ? 'auto' : isVisible ? 'metadata' : 'none'}
                       src={shouldLoadVideo ? work.src : undefined}
                       data-hero-video-index={index}
