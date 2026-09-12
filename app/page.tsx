@@ -21,7 +21,7 @@ const Lanyard = dynamic(() => import('./components/Lanyard/Lanyard'), {
 
 type GalleryImage = { src: string; alt: string };
 const videoPreview = (src: string) => src;
-const R2_VIDEO_BASE_URL = 'https://pub-9b96ac52d99f4c28a93088ba636ccac8.r2.dev/videos';
+const R2_VIDEO_BASE_URL = 'https://media.aiyuexiangxun.xyz/videos';
 const r2Video = (filename: string) => `${R2_VIDEO_BASE_URL}/${filename}`;
 const MOBILE_PAGE_MEDIA = '(max-width: 760px)';
 const NATIVE_TOUCH_SCROLL_MEDIA = '(hover: none), (pointer: coarse), (max-width: 760px)';

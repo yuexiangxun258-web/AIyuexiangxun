@@ -10,8 +10,8 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="zh-CN">
       <head>
-        <link rel="preconnect" href="https://pub-9b96ac52d99f4c28a93088ba636ccac8.r2.dev" />
-        <link rel="dns-prefetch" href="https://pub-9b96ac52d99f4c28a93088ba636ccac8.r2.dev" />
+        <link rel="preconnect" href="https://media.aiyuexiangxun.xyz" />
+        <link rel="dns-prefetch" href="https://media.aiyuexiangxun.xyz" />
         <link rel="preload" as="image" href="/images/opening-red-blue-liquid-4k.webp" fetchPriority="high" />
       </head>
       <body>{children}</body>
