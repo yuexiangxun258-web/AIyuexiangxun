@@ -254,6 +254,9 @@ const startHeroVideoPlayback = (video: HTMLVideoElement) => {
   video.defaultMuted = false;
   video.removeAttribute('muted');
   video.muted = false;
+  if (video.ended || (Number.isFinite(video.duration) && video.duration > 0 && video.currentTime >= video.duration - .08)) {
+    video.currentTime = 0;
+  }
 
   const playWithSound = (attempt = 0) => {
     const playback = video.play();
@@ -437,11 +440,12 @@ function CurvedLedVideo({
     });
 
     let previousDrawTime = 0;
+    const targetFrameInterval = 1000 / 30;
     const draw = (now: number) => {
       frame = window.requestAnimationFrame(draw);
       if (document.visibilityState !== 'visible') return;
-      if (now - previousDrawTime < 1000 / (isMobileRenderer ? 20 : 24)) return;
-      previousDrawTime = now;
+      if (now - previousDrawTime < targetFrameInterval) return;
+      previousDrawTime = now - ((now - previousDrawTime) % targetFrameInterval);
       const source = syncSourceRef.current;
       const currentTrack = burst.tracks[0];
       const sourceMatchesCurrent = Boolean(
@@ -512,7 +516,26 @@ function CurvedLedVideo({
     const cleanups = burst.tracks.map((track) => {
       const video = videoRefs.current[track.src];
       if (!video) return () => undefined;
+      let sharedSourceWaitFrame = 0;
+      let sharedSourceWaitStartedAt = 0;
       const startPlayback = () => {
+        const source = syncSourceRef.current;
+        const sourceMatchesTrack = Boolean(source && (source.currentSrc || source.src) === track.src);
+
+        // On desktop the visible carousel video is already playing the same
+        // source. Give it a brief chance to become ready, then draw directly
+        // from that element instead of starting a second decoder immediately.
+        if (!isMobileRenderer && track.src === burst.tracks[0]?.src) {
+          if (sourceMatchesTrack && source && source.readyState >= 2 && !source.paused) {
+            video.pause();
+            return;
+          }
+          if (!sharedSourceWaitStartedAt) sharedSourceWaitStartedAt = performance.now();
+          if (performance.now() - sharedSourceWaitStartedAt < 1200) {
+            sharedSourceWaitFrame = window.requestAnimationFrame(startPlayback);
+            return;
+          }
+        }
         const elapsed = track.startedAt > 0
           ? Math.max(0, (Date.now() - track.startedAt) / 1000)
           : 0;
@@ -522,7 +545,10 @@ function CurvedLedVideo({
       };
       video.addEventListener('loadedmetadata', startPlayback);
       if (video.readyState >= 1) startPlayback();
-      return () => video.removeEventListener('loadedmetadata', startPlayback);
+      return () => {
+        video.removeEventListener('loadedmetadata', startPlayback);
+        if (sharedSourceWaitFrame) window.cancelAnimationFrame(sharedSourceWaitFrame);
+      };
     });
     const resizeObserver = new ResizeObserver(resizeCanvas);
     if (canvas.parentElement) resizeObserver.observe(canvas.parentElement);
@@ -554,7 +580,7 @@ function CurvedLedVideo({
           controlsList="nodownload noremoteplayback"
           disablePictureInPicture
           disableRemotePlayback
-          preload="auto"
+          preload="metadata"
           loop
           src={track.src}
         />
