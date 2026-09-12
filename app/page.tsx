@@ -448,11 +448,18 @@ function CurvedLedVideo({
         source
         && currentTrack
         && (source.currentSrc || source.src) === currentTrack.src
-        && source.readyState >= 2,
+        && source.readyState >= 2
+        && !source.paused,
       );
       const proxyVideo = currentTrack ? videoRefs.current[currentTrack.src] : null;
       if (sourceMatchesCurrent && proxyVideo && !proxyVideo.paused) proxyVideo.pause();
       const currentVideo = sourceMatchesCurrent ? source : proxyVideo;
+      if (!sourceMatchesCurrent && proxyVideo?.paused) {
+        if (source && currentTrack && (source.currentSrc || source.src) === currentTrack.src && source.readyState >= 2) {
+          proxyVideo.currentTime = source.currentTime;
+        }
+        void proxyVideo.play().catch(() => undefined);
+      }
       if (burst.mode === 'carousel' && source?.readyState && !source.paused && currentVideo?.readyState) {
         if (Math.abs(currentVideo.currentTime - source.currentTime) > .08) currentVideo.currentTime = source.currentTime;
         if (currentVideo.paused) {
@@ -1237,6 +1244,7 @@ export default function Home() {
   const heroMainVideoRef = useRef<HTMLVideoElement | null>(null);
   const heroCarouselVideoRefs = useRef<Record<number, HTMLVideoElement | null>>({});
   const heroTouchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const heroControlsHideTimerRef = useRef<number | null>(null);
   const heroExitStepRef = useRef(0);
   const ledBurstIdRef = useRef(0);
   const ambientRegionsRef = useRef<LedVideoRegion[]>(openingAmbientBurst.regions);
@@ -1265,6 +1273,7 @@ export default function Home() {
   const [heroPlayback, setHeroPlayback] = useState({ currentTime: 0, duration: 0, paused: true, muted: false });
   const [isMobileViewport, setIsMobileViewport] = useState(false);
   const [isMobileHeroEngaged, setIsMobileHeroEngaged] = useState(false);
+  const [isHeroControlsVisible, setIsHeroControlsVisible] = useState(false);
   const [isHeroSurfaceActive, setIsHeroSurfaceActive] = useState(true);
   const [activeTimelineYear, setActiveTimelineYear] = useState(timeline[0].year);
   const [isTimelineYearRailVisible, setIsTimelineYearRailVisible] = useState(false);
@@ -1279,6 +1288,36 @@ export default function Home() {
     updateMobileViewport();
     mobileViewport.addEventListener('change', updateMobileViewport);
     return () => mobileViewport.removeEventListener('change', updateMobileViewport);
+  }, []);
+
+  const revealHeroControls = useCallback((autoHide: boolean) => {
+    if (heroControlsHideTimerRef.current !== null) {
+      window.clearTimeout(heroControlsHideTimerRef.current);
+      heroControlsHideTimerRef.current = null;
+    }
+    setIsHeroControlsVisible(true);
+    if (autoHide) {
+      heroControlsHideTimerRef.current = window.setTimeout(() => {
+        setIsHeroControlsVisible(false);
+        heroControlsHideTimerRef.current = null;
+      }, 2200);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isMobileViewport || heroStage !== 2 || !isMobileHeroEngaged) {
+      if (heroControlsHideTimerRef.current !== null) {
+        window.clearTimeout(heroControlsHideTimerRef.current);
+        heroControlsHideTimerRef.current = null;
+      }
+      setIsHeroControlsVisible(false);
+      return;
+    }
+    revealHeroControls(!heroPlayback.paused);
+  }, [activeHeroWorkIndex, heroPlayback.paused, heroStage, isMobileHeroEngaged, isMobileViewport, revealHeroControls]);
+
+  useEffect(() => () => {
+    if (heroControlsHideTimerRef.current !== null) window.clearTimeout(heroControlsHideTimerRef.current);
   }, []);
 
   const moveSiteNavPill = useCallback((index: number, showEnglish = false) => {
@@ -2141,7 +2180,7 @@ export default function Home() {
 
       <section className="hero section-shell" id="top">
         <div
-          className={`hero-intro hero-intro--stage-${heroStage} hero-intro--turn-${heroTurn}${isMobileHeroEngaged ? ' hero-intro--mobile-engaged' : ''}`}
+          className={`hero-intro hero-intro--stage-${heroStage} hero-intro--turn-${heroTurn}${isMobileHeroEngaged ? ' hero-intro--mobile-engaged' : ''}${isHeroControlsVisible ? ' hero-intro--controls-visible' : ''}`}
           ref={heroIntroRef}
           onPointerDown={(event) => {
             if (!window.matchMedia(MOBILE_PAGE_MEDIA).matches) return;
@@ -2273,8 +2312,12 @@ export default function Home() {
                     tabIndex={isPreview ? 0 : undefined}
                     aria-label={isPreview ? `切换到视频：${work.title}` : undefined}
                     onClick={isPreview ? () => selectHeroWork(index) : isActive ? (event) => {
-                      if (!window.matchMedia(MOBILE_PAGE_MEDIA).matches || isMobileHeroEngaged) return;
+                      if (!window.matchMedia(MOBILE_PAGE_MEDIA).matches) return;
                       if (event.target instanceof Element && event.target.closest('button, input, a')) return;
+                      if (isMobileHeroEngaged) {
+                        revealHeroControls(!heroPlayback.paused);
+                        return;
+                      }
                       setIsMobileHeroEngaged(true);
                       const video = heroCarouselVideoRefs.current[index];
                       if (video) {
@@ -2342,10 +2385,16 @@ export default function Home() {
                         }));
                       }}
                       onPlay={() => {
-                        if (isActive) setHeroPlayback((current) => ({ ...current, paused: false }));
+                        if (isActive) {
+                          setHeroPlayback((current) => ({ ...current, paused: false }));
+                          if (window.matchMedia(MOBILE_PAGE_MEDIA).matches) revealHeroControls(true);
+                        }
                       }}
                       onPause={() => {
-                        if (isActive) setHeroPlayback((current) => ({ ...current, paused: true }));
+                        if (isActive) {
+                          setHeroPlayback((current) => ({ ...current, paused: true }));
+                          if (window.matchMedia(MOBILE_PAGE_MEDIA).matches) revealHeroControls(false);
+                        }
                       }}
                       onVolumeChange={(event) => {
                         const muted = event.currentTarget.muted;
@@ -2567,7 +2616,7 @@ export default function Home() {
               };
               return (
               <article
-                className={`timeline-item timeline-item--expanded${item.galleries.length > 0 || item.storyboard || item.videoCases.length > 0 ? ' timeline-item--gallery' : ''}`}
+                className={`timeline-item timeline-item--expanded${item.galleries.length > 0 || item.storyboard || item.videoCases.length > 0 ? ' timeline-item--gallery' : ''}${item.year === 'NOW' ? ' timeline-item--now' : ''}`}
                 id={`timeline-panel-${item.year.toLowerCase()}`}
                 role="tabpanel"
                 aria-label={`${item.year} ${item.phase}`}

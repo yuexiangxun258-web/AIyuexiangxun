@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useLayoutEffect } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 
 type AgencyMotionProps = {
   timelineKey: string;
@@ -23,6 +23,8 @@ const revealElement = (element: HTMLElement, delay = 0, distance = 84) => {
 };
 
 export default function AgencyMotion({ timelineKey }: AgencyMotionProps) {
+  const [showOpening, setShowOpening] = useState(true);
+
   useLayoutEffect(() => {
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const animations: Animation[] = [];
@@ -32,6 +34,7 @@ export default function AgencyMotion({ timelineKey }: AgencyMotionProps) {
     document.documentElement.classList.add('agency-motion-enabled');
 
     if (reduceMotion) {
+      setShowOpening(false);
       document.documentElement.classList.add('agency-motion-reduced');
       return () => {
         document.documentElement.classList.remove('agency-motion-enabled', 'agency-motion-reduced');
@@ -118,20 +121,10 @@ export default function AgencyMotion({ timelineKey }: AgencyMotionProps) {
 
     const shouldPlayOpening = location.hash === '' || location.hash === '#top';
     if (shouldPlayOpening) {
-      const opening = document.createElement('div');
-      opening.className = 'agency-opening';
-      opening.setAttribute('aria-hidden', 'true');
-      opening.innerHTML = `
-        <div class="agency-opening-panel agency-opening-panel--top"></div>
-        <div class="agency-opening-panel agency-opening-panel--bottom"></div>
-        <div class="agency-opening-mark">
-          <span>Li HaoDong</span>
-          <strong>AIGC内容创作-Agent</strong>
-          <i></i>
-        </div>`;
-      document.body.appendChild(opening);
       animateHero();
-      timers.push(window.setTimeout(() => opening.remove(), 3400));
+      timers.push(window.setTimeout(() => setShowOpening(false), 3400));
+    } else {
+      setShowOpening(false);
     }
 
     const sectionSetups = [
@@ -207,7 +200,6 @@ export default function AgencyMotion({ timelineKey }: AgencyMotionProps) {
       timers.forEach(window.clearTimeout);
       observers.forEach((observer) => observer.disconnect());
       animations.forEach((animation) => animation.cancel());
-      document.querySelector('.agency-opening')?.remove();
       document.documentElement.classList.remove('agency-motion-enabled');
     };
   }, []);
@@ -311,5 +303,17 @@ export default function AgencyMotion({ timelineKey }: AgencyMotionProps) {
     };
   }, []);
 
-  return null;
+  if (!showOpening) return null;
+
+  return (
+    <div className="agency-opening" aria-hidden="true">
+      <div className="agency-opening-panel agency-opening-panel--top" />
+      <div className="agency-opening-panel agency-opening-panel--bottom" />
+      <div className="agency-opening-mark">
+        <span>Li HaoDong</span>
+        <strong>AIGC内容创作-Agent</strong>
+        <i />
+      </div>
+    </div>
+  );
 }

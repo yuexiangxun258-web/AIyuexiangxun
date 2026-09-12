@@ -953,7 +953,8 @@ main video { display: block; width: 100%; height: auto; max-width: 100%; max-hei
   .hero-character-layer { animation: none; }
 }
 @media (hover: none) {
-  .hero-video-controls { opacity: .92; transform: translateY(0); pointer-events: auto; }
+  .hero-intro .hero-carousel-card--active .hero-video-controls { opacity: 0; transform: translateY(10px); pointer-events: none; }
+  .hero-intro--controls-visible .hero-carousel-card--active .hero-video-controls { opacity: .92; transform: translateY(0); pointer-events: auto; }
   [data-specular='true']::after { opacity: .36; }
 }
 
@@ -1631,6 +1632,16 @@ main video { display: block; width: 100%; height: auto; max-width: 100%; max-hei
     gap: 6px;
     padding: 6px;
   }
+  .hero-intro .hero-carousel-card--active .hero-video-controls {
+    opacity: 0;
+    transform: translateY(10px);
+    pointer-events: none;
+  }
+  .hero-intro--controls-visible .hero-carousel-card--active .hero-video-controls {
+    opacity: .92;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
   .hero-intro:not(.hero-intro--mobile-engaged) .hero-video-controls { display: none; }
   .hero-intro--mobile-engaged .hero-video-controls { display: grid; }
   .hero-mobile-preview-trigger {
@@ -1846,4 +1857,45 @@ main video { display: block; width: 100%; height: auto; max-width: 100%; max-hei
     filter: blur(18px) saturate(1.08) brightness(.78);
   }
   .timeline-result-video-group--paired { grid-template-columns: 1fr; gap: 12px; }
+
+  .timeline-item--now,
+  .timeline-item--now .timeline-visual,
+  .timeline-item--now .timeline-gallery,
+  .timeline-item--now .timeline-gallery-group,
+  .timeline-item--now .timeline-video-result { min-width: 0; max-width: 100%; overflow-x: hidden; }
+  .timeline-item--now .timeline-gallery-group--project-main .timeline-gallery-stage,
+  .timeline-item--now .timeline-gallery-group--project-supporting .timeline-gallery-stage,
+  .timeline-item--now .timeline-gallery-group--project-scenes .timeline-gallery-stage {
+    grid-template-columns: minmax(0, 1fr);
+    width: 100%;
+    gap: 12px;
+    overflow: hidden;
+  }
+  .timeline-item--now .timeline-gallery-group--project-main .timeline-gallery-slide,
+  .timeline-item--now .timeline-gallery-group--project-supporting .timeline-gallery-slide,
+  .timeline-item--now .timeline-gallery-group--project-scenes .timeline-gallery-slide {
+    width: 100%;
+    height: auto;
+    aspect-ratio: auto;
+    overflow: hidden;
+  }
+  .timeline-item--now .timeline-gallery-group--project-main .timeline-image,
+  .timeline-item--now .timeline-gallery-group--project-supporting .timeline-image,
+  .timeline-item--now .timeline-gallery-group--project-scenes .timeline-image {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: calc(100svh - 150px);
+    object-fit: contain;
+    object-position: center;
+  }
+  .timeline-item--now .timeline-video-result .timeline-result-video {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    max-height: calc(100svh - 150px);
+    aspect-ratio: auto;
+    object-fit: contain;
+  }
 }
