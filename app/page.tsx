@@ -346,6 +346,7 @@ function CurvedLedVideo({
     }
     const context = canvas.getContext('2d');
     if (!context) return;
+    const isMobileRenderer = window.matchMedia(MOBILE_PAGE_MEDIA).matches;
 
     // Match the backing canvas to the displayed aspect ratio. Keeping the
     // longer edge capped preserves the video proportions on portrait phones
@@ -355,8 +356,10 @@ function CurvedLedVideo({
     const resizeCanvas = () => {
       const bounds = canvas.parentElement?.getBoundingClientRect();
       const aspect = Math.max(0.35, Math.min(3, (bounds?.width ?? 960) / Math.max(1, bounds?.height ?? 540)));
-      const nextWidth = aspect >= 1 ? 960 : Math.max(336, Math.round(960 * aspect));
-      const nextHeight = aspect >= 1 ? Math.max(336, Math.round(960 / aspect)) : 960;
+      const renderEdge = isMobileRenderer ? 640 : 960;
+      const minimumEdge = isMobileRenderer ? 224 : 336;
+      const nextWidth = aspect >= 1 ? renderEdge : Math.max(minimumEdge, Math.round(renderEdge * aspect));
+      const nextHeight = aspect >= 1 ? Math.max(minimumEdge, Math.round(renderEdge / aspect)) : renderEdge;
       width = nextWidth;
       height = nextHeight;
       if (canvas.width !== width) canvas.width = width;
@@ -409,7 +412,7 @@ function CurvedLedVideo({
       context.beginPath();
       regions.forEach(addRegionPath);
       context.clip();
-      const strips = 40;
+      const strips = isMobileRenderer ? 20 : 40;
       const sourceStrip = sourceWidth / strips;
       const destinationStrip = width / strips;
       for (let strip = 0; strip < strips; strip += 1) {
@@ -436,7 +439,7 @@ function CurvedLedVideo({
     let previousDrawTime = 0;
     const draw = (now: number) => {
       frame = window.requestAnimationFrame(draw);
-      if (now - previousDrawTime < 1000 / 30) return;
+      if (now - previousDrawTime < 1000 / (isMobileRenderer ? 24 : 30)) return;
       previousDrawTime = now;
       const source = syncSourceRef.current;
       const currentTrack = burst.tracks[0];
@@ -447,9 +450,9 @@ function CurvedLedVideo({
         && source.readyState >= 2
         && !source.paused,
       );
-      const currentVideo = sourceMatchesCurrent
-        ? source
-        : currentTrack ? videoRefs.current[currentTrack.src] : null;
+      const proxyVideo = currentTrack ? videoRefs.current[currentTrack.src] : null;
+      if (sourceMatchesCurrent && proxyVideo && !proxyVideo.paused) proxyVideo.pause();
+      const currentVideo = sourceMatchesCurrent ? source : proxyVideo;
       if (burst.mode === 'carousel' && source?.readyState && !source.paused && currentVideo?.readyState) {
         if (Math.abs(currentVideo.currentTime - source.currentTime) > .08) currentVideo.currentTime = source.currentTime;
         if (currentVideo.paused) {
@@ -1260,6 +1263,7 @@ export default function Home() {
   const [activeHeroWorkIndex, setActiveHeroWorkIndex] = useState(0);
   const [heroTurn, setHeroTurn] = useState<HeroTurn>('idle');
   const [heroPlayback, setHeroPlayback] = useState({ currentTime: 0, duration: 0, paused: true, muted: false });
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
   const [isMobileHeroEngaged, setIsMobileHeroEngaged] = useState(false);
   const [isHeroSurfaceActive, setIsHeroSurfaceActive] = useState(true);
   const [activeTimelineYear, setActiveTimelineYear] = useState(timeline[0].year);
@@ -1267,6 +1271,14 @@ export default function Home() {
   const [activeSectionId, setActiveSectionId] = useState('top');
   const [sectionStretchKey, setSectionStretchKey] = useState(0);
   const [railBurst, setRailBurst] = useState<{ year: string; id: number } | null>(null);
+
+  useEffect(() => {
+    const mobileViewport = window.matchMedia(MOBILE_PAGE_MEDIA);
+    const updateMobileViewport = () => setIsMobileViewport(mobileViewport.matches);
+    updateMobileViewport();
+    mobileViewport.addEventListener('change', updateMobileViewport);
+    return () => mobileViewport.removeEventListener('change', updateMobileViewport);
+  }, []);
 
   const moveSiteNavPill = useCallback((index: number, showEnglish = false) => {
     const nav = siteNavRef.current;
@@ -2164,28 +2176,30 @@ export default function Home() {
           }}
           onTouchCancel={() => { heroTouchStartRef.current = null; }}
         >
-          <div className="hero-ripple-layer" aria-hidden="true">
-            <RippleDistortion
-              src="/images/hero-curved-grid.svg?v=3"
-              brushSize={38}
-              strength={0.1}
-              swirl={0.45}
-              rings={2}
-              spread={1.8}
-              fade={1.35}
-              spacing={16}
-              dispersion={0.025}
-              glint={0.28}
-              tint="#6688ff"
-              tintAmount={0.12}
-              highlightColor="#c9efff"
-              grayscale
-              overlayOnly
-              trigger="both"
-              quality="low"
-              enabled={isHeroSurfaceActive}
-            />
-          </div>
+          {!isMobileViewport ? (
+            <div className="hero-ripple-layer" aria-hidden="true">
+              <RippleDistortion
+                src="/images/hero-curved-grid.svg?v=3"
+                brushSize={38}
+                strength={0.1}
+                swirl={0.45}
+                rings={2}
+                spread={1.8}
+                fade={1.35}
+                spacing={16}
+                dispersion={0.025}
+                glint={0.28}
+                tint="#6688ff"
+                tintAmount={0.12}
+                highlightColor="#c9efff"
+                grayscale
+                overlayOnly
+                trigger="both"
+                quality="low"
+                enabled={isHeroSurfaceActive}
+              />
+            </div>
+          ) : null}
           <div
             className={`hero-led-video-burst hero-led-video-burst--${ledVideoBurst.mode} hero-led-video-burst--turn-${ledVideoBurst.turn}`}
             key={ledVideoBurst.mode === 'carousel' ? ledVideoBurst.id : 'ambient'}
@@ -2240,7 +2254,11 @@ export default function Home() {
                 const isOpening = position === 'opening';
                 const isPreview = position === 'previous' || position === 'preview-first' || position === 'preview-second';
                 const isVisible = isActive || isOpening || isPreview;
-                const shouldLoadVideo = index <= activeHeroWorkIndex + 2;
+                const shouldLoadVideo = heroStage === 0
+                  ? index === 0
+                  : isMobileViewport
+                    ? Math.abs(index - activeHeroWorkIndex) <= 1 || index === activeHeroWorkIndex + 2
+                    : index <= activeHeroWorkIndex + 2;
                 return (
                   <div
                     className={`hero-carousel-card hero-carousel-card--${position}`}
@@ -2274,7 +2292,9 @@ export default function Home() {
                       disablePictureInPicture
                       disableRemotePlayback
                       poster={index === 0 ? '/images/hero-video-poster.jpg' : undefined}
-                      preload={(isActive && heroStage === 2) || isOpening ? 'auto' : isVisible ? 'metadata' : 'none'}
+                      preload={(isActive && heroStage === 2) || isOpening || (isMobileViewport && position === 'preview-first')
+                        ? 'auto'
+                        : isVisible ? 'metadata' : 'none'}
                       src={shouldLoadVideo ? work.src : undefined}
                       data-hero-video-index={index}
                       aria-label={isVisible ? work.title : undefined}
