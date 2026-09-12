@@ -622,6 +622,19 @@ main video { display: block; width: 100%; height: auto; max-width: 100%; max-hei
 .download-section { position: relative; z-index: 2; width: 100%; max-width: none; min-height: 100svh; height: 100svh; padding: 0; overflow: hidden; background: var(--paper); box-shadow: 0 0 0 100vmax var(--paper); clip-path: inset(0 -100vmax); scroll-snap-align: start; scroll-snap-stop: always; }
 .download-lanyard { position: absolute; inset: 0; min-width: 0; min-height: 100%; }
 .download-lanyard-loading { width: 100%; height: 100%; min-height: 100svh; }
+.download-card-fallback {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  top: 52%;
+  display: block;
+  width: clamp(240px, 20vw, 360px);
+  max-height: 74svh;
+  transform: translate(-50%, -50%);
+  transition: opacity .28s ease, visibility .28s ease;
+}
+.download-card-fallback img { display: block; width: 100%; height: auto; max-height: 74svh; object-fit: contain; filter: drop-shadow(0 18px 34px rgba(38,55,60,.18)); }
+.download-card-fallback.is-hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 
 @media (max-width: 900px) {
   .section-shell { width: min(100% - 36px, 1440px); }
@@ -1536,6 +1549,8 @@ main video { display: block; width: 100%; height: auto; max-width: 100%; max-hei
   .process-card { justify-content: center; }
   .latest-section { min-height: 100svh; padding: 24px 0 86px; }
   .download-section { height: 100svh; min-height: 100svh; padding-bottom: 72px; }
+  .download-card-fallback { top: 48%; width: min(58vw, 260px); max-height: calc(100svh - 120px); }
+  .download-card-fallback img { max-height: calc(100svh - 120px); }
 }
 
 .hero-mobile-preview-trigger { display: none; }

@@ -356,8 +356,8 @@ function CurvedLedVideo({
     const resizeCanvas = () => {
       const bounds = canvas.parentElement?.getBoundingClientRect();
       const aspect = Math.max(0.35, Math.min(3, (bounds?.width ?? 960) / Math.max(1, bounds?.height ?? 540)));
-      const renderEdge = isMobileRenderer ? 640 : 960;
-      const minimumEdge = isMobileRenderer ? 224 : 336;
+      const renderEdge = isMobileRenderer ? 480 : 720;
+      const minimumEdge = isMobileRenderer ? 168 : 252;
       const nextWidth = aspect >= 1 ? renderEdge : Math.max(minimumEdge, Math.round(renderEdge * aspect));
       const nextHeight = aspect >= 1 ? Math.max(minimumEdge, Math.round(renderEdge / aspect)) : renderEdge;
       width = nextWidth;
@@ -412,7 +412,7 @@ function CurvedLedVideo({
       context.beginPath();
       regions.forEach(addRegionPath);
       context.clip();
-      const strips = isMobileRenderer ? 20 : 40;
+      const strips = isMobileRenderer ? 12 : 20;
       const sourceStrip = sourceWidth / strips;
       const destinationStrip = width / strips;
       for (let strip = 0; strip < strips; strip += 1) {
@@ -439,16 +439,16 @@ function CurvedLedVideo({
     let previousDrawTime = 0;
     const draw = (now: number) => {
       frame = window.requestAnimationFrame(draw);
-      if (now - previousDrawTime < 1000 / (isMobileRenderer ? 24 : 30)) return;
+      if (document.visibilityState !== 'visible') return;
+      if (now - previousDrawTime < 1000 / (isMobileRenderer ? 20 : 24)) return;
       previousDrawTime = now;
       const source = syncSourceRef.current;
       const currentTrack = burst.tracks[0];
       const sourceMatchesCurrent = Boolean(
         source
         && currentTrack
-        && source.getAttribute('src') === currentTrack.src
-        && source.readyState >= 2
-        && !source.paused,
+        && (source.currentSrc || source.src) === currentTrack.src
+        && source.readyState >= 2,
       );
       const proxyVideo = currentTrack ? videoRefs.current[currentTrack.src] : null;
       if (sourceMatchesCurrent && proxyVideo && !proxyVideo.paused) proxyVideo.pause();
@@ -1257,7 +1257,7 @@ export default function Home() {
   const processReturnArmedRef = useRef(false);
   const processExitArmedRef = useRef(false);
   const downloadsReturnArmedRef = useRef(false);
-  const [savedTimelineOrder, setSavedTimelineOrder] = useState<TimelineOrder>({});
+  const [savedTimelineOrder, setSavedTimelineOrder] = useState<TimelineOrder>(timelineAdminCatalog);
   const [ledVideoBurst, setLedVideoBurst] = useState<LedVideoBurst>(openingAmbientBurst);
   const [heroStage, setHeroStage] = useState(0);
   const [activeHeroWorkIndex, setActiveHeroWorkIndex] = useState(0);
@@ -1269,6 +1269,7 @@ export default function Home() {
   const [activeTimelineYear, setActiveTimelineYear] = useState(timeline[0].year);
   const [isTimelineYearRailVisible, setIsTimelineYearRailVisible] = useState(false);
   const [activeSectionId, setActiveSectionId] = useState('top');
+  const [isContactSceneReady, setIsContactSceneReady] = useState(false);
   const [sectionStretchKey, setSectionStretchKey] = useState(0);
   const [railBurst, setRailBurst] = useState<{ year: string; id: number } | null>(null);
 
@@ -1480,8 +1481,12 @@ export default function Home() {
 
   useEffect(() => {
     const stored = localStorage.getItem(TIMELINE_ORDER_KEY);
-    if (stored) setSavedTimelineOrder(JSON.parse(stored));
+    if (stored) setSavedTimelineOrder({ ...timelineAdminCatalog, ...JSON.parse(stored) });
   }, []);
+
+  useEffect(() => {
+    if (activeSectionId !== 'downloads') setIsContactSceneReady(false);
+  }, [activeSectionId]);
 
   useEffect(() => {
     let frame = 0;
@@ -2176,7 +2181,7 @@ export default function Home() {
           }}
           onTouchCancel={() => { heroTouchStartRef.current = null; }}
         >
-          {!isMobileViewport ? (
+          {!isMobileViewport && heroStage < 2 ? (
             <div className="hero-ripple-layer" aria-hidden="true">
               <RippleDistortion
                 src="/images/hero-curved-grid.svg?v=3"
@@ -2553,9 +2558,7 @@ export default function Home() {
           <div className="timeline-list timeline-list--archive" aria-live="polite">
             {timeline.filter((item) => item.year === activeTimelineYear).map((item) => {
               const index = timeline.findIndex((entry) => entry.year === item.year);
-              const effectiveTimelineOrder = item.year === '2026'
-                ? timelineAdminCatalog[item.year]
-                : savedTimelineOrder[item.year];
+              const effectiveTimelineOrder = savedTimelineOrder[item.year] ?? timelineAdminCatalog[item.year];
               const orderedVideoCases = orderItems(item.videoCases, effectiveTimelineOrder, (entry) => entry.title);
               const orderedGalleries = orderItems(item.galleries, effectiveTimelineOrder, (entry) => entry.label);
               const sectionPosition = (label: string, fallback: number) => {
@@ -2946,6 +2949,14 @@ export default function Home() {
 
       <section className="download-section section-shell" id="downloads">
         <div className="download-lanyard" aria-label="可拖动的乐湘浔作品资料卡，卡面包含个人简历入口">
+          <a
+            className={`download-card-fallback${isContactSceneReady ? ' is-hidden' : ''}`}
+            href="/documents/ai-designer-resume.png"
+            download="AI设计师简历.png"
+            aria-label="下载 AI 设计师简历"
+          >
+            <img src="/assets/lanyard/portfolio-card-front.svg?v=6" alt="乐湘浔个人简历卡片" />
+          </a>
           {activeSectionId === 'downloads' ? (
             <Lanyard
               position={[0, 0, 14.5]}
@@ -2958,6 +2969,7 @@ export default function Home() {
               lanyardWidth={1.2}
               downloadHref="/documents/ai-designer-resume.png"
               downloadFilename="AI设计师简历.png"
+              onReady={() => setIsContactSceneReady(true)}
             />
           ) : null}
         </div>

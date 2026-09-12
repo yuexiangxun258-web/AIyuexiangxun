@@ -56,6 +56,7 @@ interface LanyardProps {
   lanyardWidth?: number;
   downloadHref?: string | null;
   downloadFilename?: string;
+  onReady?: () => void;
 }
 
 export default function Lanyard({
@@ -69,7 +70,8 @@ export default function Lanyard({
   lanyardImage = null,
   lanyardWidth = 1,
   downloadHref = null,
-  downloadFilename = 'download'
+  downloadFilename = 'download',
+  onReady
 }: LanyardProps) {
   const [isMobile, setIsMobile] = useState<boolean>(() => typeof window !== 'undefined' && window.innerWidth < 768);
 
@@ -98,6 +100,7 @@ export default function Lanyard({
             lanyardWidth={lanyardWidth}
             downloadHref={downloadHref}
             downloadFilename={downloadFilename}
+            onReady={onReady}
           />
         </Physics>
         <Environment blur={0.75}>
@@ -146,6 +149,7 @@ interface BandProps {
   lanyardWidth?: number;
   downloadHref?: string | null;
   downloadFilename?: string;
+  onReady?: () => void;
 }
 
 type LanyardRigidBody = RapierRigidBody & {
@@ -162,7 +166,8 @@ function Band({
   lanyardImage = null,
   lanyardWidth = 1,
   downloadHref = null,
-  downloadFilename = 'download'
+  downloadFilename = 'download',
+  onReady
 }: BandProps) {
   const band = useRef<THREE.Mesh<InstanceType<typeof MeshLineGeometry>, InstanceType<typeof MeshLineMaterial>>>(null!);
   const fixed = useRef<RapierRigidBody>(null!);
@@ -252,6 +257,7 @@ function Band({
   const [dragged, drag] = useState<false | THREE.Vector3>(false);
   const [hovered, hover] = useState(false);
   const [downloadHovered, setDownloadHovered] = useState(false);
+  const hasReportedReady = useRef(false);
 
   const isDownloadHotspot = (event: ThreeEvent<PointerEvent>): boolean => {
     if (!downloadHref || !event.uv) return false;
@@ -280,6 +286,10 @@ function Band({
   }, [hovered, dragged, downloadHovered]);
 
   useFrame((state, delta) => {
+    if (!hasReportedReady.current && card.current && fixed.current) {
+      hasReportedReady.current = true;
+      onReady?.();
+    }
     if (dragged && typeof dragged !== 'boolean') {
       vec.set(state.pointer.x, state.pointer.y, 0.5).unproject(state.camera);
       dir.copy(vec).sub(state.camera.position).normalize();
