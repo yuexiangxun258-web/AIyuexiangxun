@@ -228,7 +228,7 @@ const openingHeroWork = {
   title: '人物微表情的尝试',
   meta: 'SEEDANCE 2.5 · VIDEO',
   description: '以眼神、呼吸和细微表情为核心进行人物动态测试，让静态人物在短镜头中呈现自然、克制的情绪变化。',
-  src: r2Video('timeline-2026-seedance-2-5-micro-expression-web.mp4'),
+  src: '/videos/hero-preview-720p-v1.mp4',
   className: 'work-card work-card--landscape',
 };
 
@@ -350,6 +350,8 @@ function CurvedLedVideo({
     const context = canvas.getContext('2d');
     if (!context) return;
     const isMobileRenderer = window.matchMedia(MOBILE_PAGE_MEDIA).matches;
+    const matchesTrack = (video: HTMLVideoElement, src: string) =>
+      (video.currentSrc || video.src) === new URL(src, document.baseURI).href;
 
     // Match the backing canvas to the displayed aspect ratio. Keeping the
     // longer edge capped preserves the video proportions on portrait phones
@@ -451,7 +453,7 @@ function CurvedLedVideo({
       const sourceMatchesCurrent = Boolean(
         source
         && currentTrack
-        && (source.currentSrc || source.src) === currentTrack.src
+        && matchesTrack(source, currentTrack.src)
         && source.readyState >= 2
         && !source.paused,
       );
@@ -459,7 +461,7 @@ function CurvedLedVideo({
       if (sourceMatchesCurrent && proxyVideo && !proxyVideo.paused) proxyVideo.pause();
       const currentVideo = sourceMatchesCurrent ? source : proxyVideo;
       if (!sourceMatchesCurrent && proxyVideo?.paused) {
-        if (source && currentTrack && (source.currentSrc || source.src) === currentTrack.src && source.readyState >= 2) {
+        if (source && currentTrack && matchesTrack(source, currentTrack.src) && source.readyState >= 2) {
           proxyVideo.currentTime = source.currentTime;
         }
         void proxyVideo.play().catch(() => undefined);
@@ -486,7 +488,7 @@ function CurvedLedVideo({
 
         const drawGrouped = (regions: LedVideoRegion[], opacity: number) => {
           burst.tracks.forEach((track) => {
-            const video = videoRefs.current[track.src];
+            const video = track.src === currentTrack?.src ? currentVideo : videoRefs.current[track.src];
             if (!video) return;
             drawWarpedVideo(video, regions.filter((region) => region.src === track.src), opacity);
           });
@@ -516,25 +518,12 @@ function CurvedLedVideo({
     const cleanups = burst.tracks.map((track) => {
       const video = videoRefs.current[track.src];
       if (!video) return () => undefined;
-      let sharedSourceWaitFrame = 0;
-      let sharedSourceWaitStartedAt = 0;
       const startPlayback = () => {
         const source = syncSourceRef.current;
-        const sourceMatchesTrack = Boolean(source && (source.currentSrc || source.src) === track.src);
-
-        // On desktop the visible carousel video is already playing the same
-        // source. Give it a brief chance to become ready, then draw directly
-        // from that element instead of starting a second decoder immediately.
-        if (!isMobileRenderer && track.src === burst.tracks[0]?.src) {
-          if (sourceMatchesTrack && source && source.readyState >= 2 && !source.paused) {
-            video.pause();
-            return;
-          }
-          if (!sharedSourceWaitStartedAt) sharedSourceWaitStartedAt = performance.now();
-          if (performance.now() - sharedSourceWaitStartedAt < 1200) {
-            sharedSourceWaitFrame = window.requestAnimationFrame(startPlayback);
-            return;
-          }
+        const sourceMatchesTrack = Boolean(source && matchesTrack(source, track.src));
+        if (sourceMatchesTrack && source && source.readyState >= 2 && !source.paused) {
+          video.pause();
+          return;
         }
         const elapsed = track.startedAt > 0
           ? Math.max(0, (Date.now() - track.startedAt) / 1000)
@@ -547,7 +536,6 @@ function CurvedLedVideo({
       if (video.readyState >= 1) startPlayback();
       return () => {
         video.removeEventListener('loadedmetadata', startPlayback);
-        if (sharedSourceWaitFrame) window.cancelAnimationFrame(sharedSourceWaitFrame);
       };
     });
     const resizeObserver = new ResizeObserver(resizeCanvas);

@@ -42,5 +42,6 @@ next-env.d.ts
 /outputs/
 /work/
 
-# videos are served from Cloudflare R2
-/public/videos/
+# Full-size videos stay in R2; the small hero preview ships with the site.
+/public/videos/*
+!/public/videos/hero-preview-720p-v1.mp4
