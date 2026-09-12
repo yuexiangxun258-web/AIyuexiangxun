@@ -2,7 +2,7 @@
 
 import { type CSSProperties, type RefObject, type VideoHTMLAttributes, useCallback, useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { orderItems, TIMELINE_ORDER_KEY, TimelineOrder } from './timeline-order';
+import { orderItems, TIMELINE_ORDER_KEY, TimelineOrder, timelineAdminCatalog } from './timeline-order';
 import CircularGallery from './CircularGallery';
 import GlassSurface from './components/GlassSurface';
 import FluidGlass from './components/FluidGlass';
@@ -30,9 +30,10 @@ type DeferredVideoProps = Omit<VideoHTMLAttributes<HTMLVideoElement>, 'src'> & {
   src: string;
 };
 
-function DeferredVideo({ src, className = '', preload = 'metadata', onLoadedMetadata, onContextMenu, onDragStart, ...props }: DeferredVideoProps) {
+function DeferredVideo({ src, className = '', preload = 'metadata', style, onLoadedMetadata, onContextMenu, onDragStart, ...props }: DeferredVideoProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [shouldLoad, setShouldLoad] = useState(false);
+  const [resolvedAspectRatio, setResolvedAspectRatio] = useState<string | null>(null);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -60,8 +61,9 @@ function DeferredVideo({ src, className = '', preload = 'metadata', onLoadedMeta
       controlsList="nodownload noremoteplayback"
       disablePictureInPicture
       disableRemotePlayback
-      preload={shouldLoad ? preload : 'none'}
+      preload={shouldLoad ? (typeof window !== 'undefined' && window.matchMedia(MOBILE_PAGE_MEDIA).matches ? 'auto' : preload) : 'none'}
       src={shouldLoad ? src : undefined}
+      style={{ ...style, ...(resolvedAspectRatio ? { aspectRatio: resolvedAspectRatio } : {}) }}
       data-deferred-src={src}
       onContextMenu={(event) => {
         event.preventDefault();
@@ -72,7 +74,13 @@ function DeferredVideo({ src, className = '', preload = 'metadata', onLoadedMeta
         onDragStart?.(event);
       }}
       onLoadedMetadata={(event) => {
-        event.currentTarget.currentTime = 0;
+        const video = event.currentTarget;
+        if (video.videoWidth > 0 && video.videoHeight > 0) {
+          setResolvedAspectRatio(`${video.videoWidth} / ${video.videoHeight}`);
+        }
+        video.currentTime = window.matchMedia(MOBILE_PAGE_MEDIA).matches
+          ? Math.min(.12, Number.isFinite(video.duration) ? video.duration : .12)
+          : 0;
         onLoadedMetadata?.(event);
       }}
     />
@@ -2120,21 +2128,41 @@ export default function Home() {
           ref={heroIntroRef}
           onPointerDown={(event) => {
             if (!window.matchMedia(MOBILE_PAGE_MEDIA).matches) return;
-            if (event.pointerType !== 'touch' && event.pointerType !== 'mouse') return;
+            if (event.pointerType !== 'mouse') return;
             if (!(event.target instanceof Element) || !event.target.closest('.hero-carousel-card--active')) return;
             if (event.target instanceof Element && event.target.closest('button, input, a')) return;
             heroTouchStartRef.current = { x: event.clientX, y: event.clientY };
+            event.currentTarget.setPointerCapture?.(event.pointerId);
           }}
           onPointerUp={(event) => {
             if (!window.matchMedia(MOBILE_PAGE_MEDIA).matches) return;
-            if ((event.pointerType !== 'touch' && event.pointerType !== 'mouse') || !heroTouchStartRef.current || heroStageRef.current !== 2) return;
+            if (event.pointerType !== 'mouse' || !heroTouchStartRef.current || heroStageRef.current !== 2) return;
             const deltaX = event.clientX - heroTouchStartRef.current.x;
             const deltaY = event.clientY - heroTouchStartRef.current.y;
             heroTouchStartRef.current = null;
+            if (event.currentTarget.hasPointerCapture?.(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
             if (Math.abs(deltaX) < 48 || Math.abs(deltaX) <= Math.abs(deltaY)) return;
             stepHeroWork(deltaX < 0 ? 1 : -1);
           }}
           onPointerCancel={() => { heroTouchStartRef.current = null; }}
+          onTouchStart={(event) => {
+            if (!window.matchMedia(MOBILE_PAGE_MEDIA).matches || !isMobileHeroEngaged) return;
+            if (!(event.target instanceof Element) || !event.target.closest('.hero-carousel-card--active')) return;
+            if (event.target.closest('button, input, a')) return;
+            const touch = event.touches[0];
+            if (touch) heroTouchStartRef.current = { x: touch.clientX, y: touch.clientY };
+          }}
+          onTouchEnd={(event) => {
+            if (!window.matchMedia(MOBILE_PAGE_MEDIA).matches || !heroTouchStartRef.current || heroStageRef.current !== 2) return;
+            const touch = event.changedTouches[0];
+            if (!touch) return;
+            const deltaX = touch.clientX - heroTouchStartRef.current.x;
+            const deltaY = touch.clientY - heroTouchStartRef.current.y;
+            heroTouchStartRef.current = null;
+            if (Math.abs(deltaX) < 42 || Math.abs(deltaX) <= Math.abs(deltaY)) return;
+            stepHeroWork(deltaX < 0 ? 1 : -1);
+          }}
+          onTouchCancel={() => { heroTouchStartRef.current = null; }}
         >
           <div className="hero-ripple-layer" aria-hidden="true">
             <RippleDistortion
@@ -2221,7 +2249,16 @@ export default function Home() {
                     role={isPreview ? 'button' : undefined}
                     tabIndex={isPreview ? 0 : undefined}
                     aria-label={isPreview ? `切换到视频：${work.title}` : undefined}
-                    onClick={isPreview ? () => selectHeroWork(index) : undefined}
+                    onClick={isPreview ? () => selectHeroWork(index) : isActive ? (event) => {
+                      if (!window.matchMedia(MOBILE_PAGE_MEDIA).matches || isMobileHeroEngaged) return;
+                      if (event.target instanceof Element && event.target.closest('button, input, a')) return;
+                      setIsMobileHeroEngaged(true);
+                      const video = heroCarouselVideoRefs.current[index];
+                      if (video) {
+                        video.currentTime = 0;
+                        startHeroVideoPlayback(video);
+                      }
+                    } : undefined}
                     onKeyDown={isPreview ? (event) => {
                       if (event.key !== 'Enter' && event.key !== ' ') return;
                       event.preventDefault();
@@ -2291,6 +2328,25 @@ export default function Home() {
                       }}
                     />
                     <GlassSurface {...heroGlassSurfaceProps} className="hero-glass-frame hero-screen-glass" />
+                    {isActive && heroStage === 2 && !isMobileHeroEngaged ? (
+                      <button
+                        className="hero-mobile-preview-trigger"
+                        type="button"
+                        aria-label={`播放并展开视频：${work.title}`}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                      if (!window.matchMedia(MOBILE_PAGE_MEDIA).matches) return;
+                      setIsMobileHeroEngaged(true);
+                      const video = heroCarouselVideoRefs.current[index];
+                      if (video) {
+                        video.currentTime = 0;
+                        startHeroVideoPlayback(video);
+                      }
+                        }}
+                      >
+                        <span aria-hidden="true">▶</span>
+                      </button>
+                    ) : null}
                     {isActive && heroStage === 2 ? (
                       <div className="hero-video-controls" aria-label={`${work.title} 播放控制`}>
                         <button
@@ -2477,10 +2533,13 @@ export default function Home() {
           <div className="timeline-list timeline-list--archive" aria-live="polite">
             {timeline.filter((item) => item.year === activeTimelineYear).map((item) => {
               const index = timeline.findIndex((entry) => entry.year === item.year);
-              const orderedVideoCases = orderItems(item.videoCases, savedTimelineOrder[item.year], (entry) => entry.title);
-              const orderedGalleries = orderItems(item.galleries, savedTimelineOrder[item.year], (entry) => entry.label);
+              const effectiveTimelineOrder = item.year === '2026'
+                ? timelineAdminCatalog[item.year]
+                : savedTimelineOrder[item.year];
+              const orderedVideoCases = orderItems(item.videoCases, effectiveTimelineOrder, (entry) => entry.title);
+              const orderedGalleries = orderItems(item.galleries, effectiveTimelineOrder, (entry) => entry.label);
               const sectionPosition = (label: string, fallback: number) => {
-                const position = savedTimelineOrder[item.year]?.indexOf(label) ?? -1;
+                const position = effectiveTimelineOrder?.indexOf(label) ?? -1;
                 return position >= 0 ? position : fallback;
               };
               return (
