@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 
 const SPECULAR_TARGETS = [
   '.hero-tool-row strong',
-  '.hero-carousel-card:not(.hero-carousel-card--hidden):not(.hero-carousel-card--offstage-left):not(.hero-carousel-card--offstage-right)',
+  '.hero-carousel-card',
   '.hero-work-intro',
   '.hero-skip-button',
   '.timeline-year-button',
@@ -22,15 +22,18 @@ const SPECULAR_TARGETS = [
 
 const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 
-export default function SpecularFrames() {
+export default function SpecularFrames({ activeSectionId, timelineKey }: { activeSectionId: string; timelineKey: string }) {
   useEffect(() => {
     let targets: HTMLElement[] = [];
     let frame = 0;
+    let syncFrame = 0;
     let pointerX = window.innerWidth * 0.5;
     let pointerY = window.innerHeight * 0.5;
+    const root = document.getElementById(activeSectionId);
+    if (!root) return;
 
     const syncTargets = () => {
-      targets = Array.from(document.querySelectorAll<HTMLElement>(SPECULAR_TARGETS));
+      targets = Array.from(root.querySelectorAll<HTMLElement>(SPECULAR_TARGETS));
       targets.forEach((target) => {
         target.dataset.specular = 'true';
         target.style.setProperty('--specular-x', '18%');
@@ -68,20 +71,28 @@ export default function SpecularFrames() {
       if (!frame) frame = window.requestAnimationFrame(paint);
     };
 
+    const scheduleSync = () => {
+      if (syncFrame) return;
+      syncFrame = window.requestAnimationFrame(() => {
+        syncFrame = 0;
+        syncTargets();
+        paint();
+      });
+    };
+
     syncTargets();
-    const observer = new MutationObserver(() => {
-      syncTargets();
-      paint();
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
-    window.addEventListener('pointermove', onPointerMove, { passive: true });
+    const observer = new MutationObserver(scheduleSync);
+    observer.observe(root, { childList: true, subtree: true });
+    const supportsPointerEffects = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    if (supportsPointerEffects) window.addEventListener('pointermove', onPointerMove, { passive: true });
     window.addEventListener('resize', paint, { passive: true });
     paint();
 
     return () => {
       if (frame) window.cancelAnimationFrame(frame);
+      if (syncFrame) window.cancelAnimationFrame(syncFrame);
       observer.disconnect();
-      window.removeEventListener('pointermove', onPointerMove);
+      if (supportsPointerEffects) window.removeEventListener('pointermove', onPointerMove);
       window.removeEventListener('resize', paint);
       targets.forEach((target) => {
         delete target.dataset.specular;
@@ -91,7 +102,7 @@ export default function SpecularFrames() {
         target.style.removeProperty('--specular-strength');
       });
     };
-  }, []);
+  }, [activeSectionId, timelineKey]);
 
   return null;
 }

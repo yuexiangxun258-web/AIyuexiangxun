@@ -2148,7 +2148,7 @@ export default function Home() {
       }}
     >
       <AgencyMotion timelineKey={activeTimelineYear} />
-      <SpecularFrames />
+      <SpecularFrames activeSectionId={activeSectionId} timelineKey={activeTimelineYear} />
       {sectionStretchKey > 0 ? <div className="section-transition-stretch" key={sectionStretchKey} aria-hidden="true" /> : null}
       <header className="site-header">
         <FluidGlass
@@ -2301,7 +2301,7 @@ export default function Home() {
                 const shouldLoadVideo = heroStage === 0
                   ? index === 0
                   : isMobileViewport
-                    ? Math.abs(index - activeHeroWorkIndex) <= 1 || index === activeHeroWorkIndex + 2
+                    ? index === activeHeroWorkIndex || (isMobileHeroEngaged && (Math.abs(index - activeHeroWorkIndex) <= 1 || index === activeHeroWorkIndex + 2))
                     : index <= activeHeroWorkIndex + 2;
                 return (
                   <div
@@ -2340,7 +2340,7 @@ export default function Home() {
                       disablePictureInPicture
                       disableRemotePlayback
                       poster={index === 0 ? '/images/hero-video-poster.jpg' : undefined}
-                      preload={(isActive && heroStage === 2) || isOpening || (isMobileViewport && position === 'preview-first')
+                      preload={(isActive && heroStage === 2 && (!isMobileViewport || isMobileHeroEngaged)) || isOpening
                         ? 'auto'
                         : isVisible ? 'metadata' : 'none'}
                       src={shouldLoadVideo ? work.src : undefined}
@@ -2554,20 +2554,22 @@ export default function Home() {
           ))}
         </nav>
         <div className="portfolio-balatro-background" aria-hidden="true">
-          <Balatro
-            spinRotation={-1.65}
-            spinSpeed={2.45}
-            color1="#22e6e9"
-            color2="#ff4fc6"
-            color3="#10162c"
-            contrast={3.6}
-            lighting={0.22}
-            spinAmount={0.18}
-            pixelFilter={2800}
-            spinEase={0.8}
-            isRotate={false}
-            mouseInteraction
-          />
+          {activeSectionId === 'timeline' ? (
+            <Balatro
+              spinRotation={-1.65}
+              spinSpeed={2.45}
+              color1="#22e6e9"
+              color2="#ff4fc6"
+              color3="#10162c"
+              contrast={3.6}
+              lighting={0.22}
+              spinAmount={0.18}
+              pixelFilter={2800}
+              spinEase={0.8}
+              isRotate={false}
+              mouseInteraction
+            />
+          ) : null}
         </div>
         <div className="section-shell">
           <div className="section-heading timeline-section-heading">
@@ -2929,12 +2931,14 @@ export default function Home() {
 
       <section className="innovation-page" id="process" aria-labelledby="innovation-page-title">
         <div className="innovation-page-background" aria-hidden="true">
-          <Iridescence
-            color={[1, 1, 1]}
-            mouseReact={false}
-            amplitude={0.1}
-            speed={1.0}
-          />
+          {activeSectionId === 'process' ? (
+            <Iridescence
+              color={[1, 1, 1]}
+              mouseReact={false}
+              amplitude={0.1}
+              speed={1.0}
+            />
+          ) : null}
         </div>
         <section className="process-section section-shell">
           <div className="section-heading">
