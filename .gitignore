@@ -41,6 +41,7 @@ next-env.d.ts
 /.wrangler/
 /outputs/
 /work/
+*.tsbuildinfo
 
 # Full-size videos stay in R2; the small hero preview ships with the site.
 /public/videos/*

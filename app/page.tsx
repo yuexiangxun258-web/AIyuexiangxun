@@ -9,6 +9,7 @@ import FluidGlass from './components/FluidGlass';
 import SpecularFrames from './components/SpecularFrames';
 import WarpText from './components/WarpText';
 import AgencyMotion from './components/AgencyMotion';
+import mediaManifest from './media/manifest.json';
 
 const RippleDistortion = dynamic(() => import('./components/RippleDistortion'), { ssr: false });
 const Balatro = dynamic(() => import('./components/Balatro'), { ssr: false });
@@ -22,7 +23,9 @@ const Lanyard = dynamic(() => import('./components/Lanyard/Lanyard'), {
 type GalleryImage = { src: string; alt: string };
 const videoPreview = (src: string) => src;
 const R2_VIDEO_BASE_URL = 'https://media.aiyuexiangxun.xyz/videos';
-const r2Video = (filename: string) => `${R2_VIDEO_BASE_URL}/${filename}`;
+const webMedia = mediaManifest as Record<string, { src: string; poster: string }>;
+const r2Video = (filename: string) => webMedia[filename]?.src ?? `${R2_VIDEO_BASE_URL}/${filename}`;
+const mediaPoster = (src: string) => Object.values(webMedia).find((media) => media.src === src)?.poster;
 const MOBILE_PAGE_MEDIA = '(max-width: 760px)';
 const NATIVE_TOUCH_SCROLL_MEDIA = '(hover: none), (pointer: coarse), (max-width: 760px)';
 
@@ -30,30 +33,45 @@ type DeferredVideoProps = Omit<VideoHTMLAttributes<HTMLVideoElement>, 'src'> & {
   src: string;
 };
 
-function DeferredVideo({ src, className = '', preload = 'metadata', style, onLoadedMetadata, onContextMenu, onDragStart, ...props }: DeferredVideoProps) {
+function DeferredVideo({ src, className = '', preload = 'metadata', style, poster, onLoadedMetadata, onContextMenu, onDragStart, onError, ...props }: DeferredVideoProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [shouldLoad, setShouldLoad] = useState(false);
   const [resolvedAspectRatio, setResolvedAspectRatio] = useState<string | null>(null);
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     const video = videoRef.current;
-    if (!video || shouldLoad) return;
-    if (!('IntersectionObserver' in window)) {
+    if (!video) return;
+    let isVisible = false;
+    const update = () => {
+      const allowed = isVisible && !video.closest('.section-is-paused');
+      setShouldLoad(allowed);
+      if (!allowed && video.getAttribute('src')) {
+        video.pause();
+        video.removeAttribute('src');
+        video.load();
+      }
+    };
+    if (typeof IntersectionObserver === 'undefined') {
       const frame = window.requestAnimationFrame(() => setShouldLoad(true));
       return () => window.cancelAnimationFrame(frame);
     }
 
     const observer = new IntersectionObserver(([entry]) => {
-      if (!entry.isIntersecting) return;
-      setShouldLoad(true);
-      observer.disconnect();
-    }, { rootMargin: '240px 0px' });
+      isVisible = entry.isIntersecting;
+      update();
+    }, { rootMargin: '100px 0px' });
 
     observer.observe(video);
-    return () => observer.disconnect();
-  }, [shouldLoad]);
+    document.addEventListener('portfolio-sectionchange', update);
+    return () => {
+      observer.disconnect();
+      document.removeEventListener('portfolio-sectionchange', update);
+    };
+  }, []);
 
   return (
+    <>
     <video
       {...props}
       ref={videoRef}
@@ -61,10 +79,15 @@ function DeferredVideo({ src, className = '', preload = 'metadata', style, onLoa
       controlsList="nodownload noremoteplayback"
       disablePictureInPicture
       disableRemotePlayback
-      preload={shouldLoad ? (typeof window !== 'undefined' && window.matchMedia(MOBILE_PAGE_MEDIA).matches ? 'auto' : preload) : 'none'}
+      preload={shouldLoad ? preload : 'none'}
       src={shouldLoad ? src : undefined}
+      poster={poster ?? mediaPoster(src)}
       style={{ ...style, ...(resolvedAspectRatio ? { aspectRatio: resolvedAspectRatio } : {}) }}
       data-deferred-src={src}
+      onError={(event) => {
+        if (event.currentTarget.getAttribute('src')) setFailed(true);
+        onError?.(event);
+      }}
       onContextMenu={(event) => {
         event.preventDefault();
         onContextMenu?.(event);
@@ -78,12 +101,19 @@ function DeferredVideo({ src, className = '', preload = 'metadata', style, onLoa
         if (video.videoWidth > 0 && video.videoHeight > 0) {
           setResolvedAspectRatio(`${video.videoWidth} / ${video.videoHeight}`);
         }
-        video.currentTime = window.matchMedia(MOBILE_PAGE_MEDIA).matches
-          ? Math.min(.12, Number.isFinite(video.duration) ? video.duration : .12)
-          : 0;
+        setFailed(false);
         onLoadedMetadata?.(event);
       }}
     />
+    {failed ? <button className="media-retry" type="button" onClick={() => {
+      const video = videoRef.current;
+      if (!video) return;
+      setFailed(false);
+      video.src = src;
+      video.load();
+      void video.play().catch(() => setFailed(true));
+    }}>视频暂未加载成功，点击重试</button> : null}
+    </>
   );
 }
 const heroGlassSurfaceProps = {
@@ -111,19 +141,29 @@ type InteractiveGalleryProps = {
 };
 
 function InteractiveGallery({ group }: InteractiveGalleryProps) {
+  const galleryRef = useRef<HTMLElement | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isThumbnailHovered, setIsThumbnailHovered] = useState(false);
+  const [isGalleryVisible, setIsGalleryVisible] = useState(false);
 
   useEffect(() => {
-    if (isThumbnailHovered) return;
+    const gallery = galleryRef.current;
+    if (!gallery) return;
+    const observer = new IntersectionObserver(([entry]) => setIsGalleryVisible(entry.isIntersecting), { rootMargin: '80px' });
+    observer.observe(gallery);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (isThumbnailHovered || !isGalleryVisible || window.matchMedia('(max-width: 760px), (pointer: coarse)').matches) return;
     const timer = window.setInterval(() => {
       setActiveIndex((current) => (current + 1) % group.images.length);
     }, 2000);
     return () => window.clearInterval(timer);
-  }, [group.images.length, isThumbnailHovered]);
+  }, [group.images.length, isThumbnailHovered, isGalleryVisible]);
 
   return (
-    <section className={`timeline-gallery-group timeline-gallery-group--interactive ${group.className}`}>
+    <section ref={galleryRef} className={`timeline-gallery-group timeline-gallery-group--interactive ${group.className}`}>
       <div className="timeline-gallery-heading">
         <p>{group.label}</p>
       </div>
@@ -135,8 +175,10 @@ function InteractiveGallery({ group }: InteractiveGalleryProps) {
             key={image.src}
             aria-hidden={imageIndex !== activeIndex}
           >
-            <img className="timeline-gallery-backdrop" src={image.src} alt="" aria-hidden="true" loading="lazy" decoding="async" />
-            <img className="timeline-image" src={image.src} alt={image.alt} loading="lazy" decoding="async" />
+            {imageIndex === activeIndex ? <>
+              <img className="timeline-gallery-backdrop" src={image.src} alt="" aria-hidden="true" loading="lazy" decoding="async" />
+              <img className="timeline-image" src={image.src} alt={image.alt} loading="lazy" decoding="async" />
+            </> : null}
           </div>
         ))}
       </div>
@@ -249,6 +291,8 @@ const startHeroVideoPlayback = (video: HTMLVideoElement) => {
     video.muted = true;
     return;
   }
+  const work = heroWorks[Number(video.dataset.heroVideoIndex)];
+  if (!video.getAttribute('src') && work) video.src = work.src;
   video.dataset.playbackRequested = 'true';
   video.volume = 1;
   video.defaultMuted = false;
@@ -323,6 +367,29 @@ const openingAmbientBurst: LedVideoBurst = {
   tracks: [openingAmbientTrack],
   transitionStartedAt: 0,
 };
+
+function MobileHeroBackground({ active }: { active: boolean }) {
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    const update = () => {
+      if (active && !document.hidden) void video.play().catch(() => undefined);
+      else video.pause();
+    };
+    update();
+    document.addEventListener('visibilitychange', update);
+    return () => {
+      video.pause();
+      document.removeEventListener('visibilitychange', update);
+    };
+  }, [active]);
+  return <div className="hero-led-video-screen hero-led-video-screen--native">
+    <video ref={videoRef} className="hero-native-background" data-playback-proxy="true"
+      src="/media/v2/hero-background.mp4" poster="/images/hero-video-poster.jpg"
+      muted autoPlay={active} loop playsInline preload={active ? 'auto' : 'none'} />
+  </div>;
+}
 
 function CurvedLedVideo({
   burst,
@@ -1237,6 +1304,7 @@ const pauseInactiveSections = (activeId: string) => {
       media.muted = true;
     });
   });
+  document.dispatchEvent(new Event('portfolio-sectionchange'));
 };
 
 const timelineYearHoverLabels: Record<string, string> = {
@@ -1286,6 +1354,8 @@ export default function Home() {
   const [heroTurn, setHeroTurn] = useState<HeroTurn>('idle');
   const [heroPlayback, setHeroPlayback] = useState({ currentTime: 0, duration: 0, paused: true, muted: false });
   const [isMobileViewport, setIsMobileViewport] = useState(false);
+  const [isDeviceReady, setIsDeviceReady] = useState(false);
+  const [useLightEffects, setUseLightEffects] = useState(true);
   const [isMobileHeroEngaged, setIsMobileHeroEngaged] = useState(false);
   const [isHeroControlsVisible, setIsHeroControlsVisible] = useState(false);
   const [isHeroSurfaceActive, setIsHeroSurfaceActive] = useState(true);
@@ -1293,15 +1363,25 @@ export default function Home() {
   const [isTimelineYearRailVisible, setIsTimelineYearRailVisible] = useState(false);
   const [activeSectionId, setActiveSectionId] = useState('top');
   const [isContactSceneReady, setIsContactSceneReady] = useState(false);
+  const [heroMediaStatus, setHeroMediaStatus] = useState<'ready' | 'loading' | 'error'>('ready');
   const [sectionStretchKey, setSectionStretchKey] = useState(0);
   const [railBurst, setRailBurst] = useState<{ year: string; id: number } | null>(null);
 
   useEffect(() => {
     const mobileViewport = window.matchMedia(MOBILE_PAGE_MEDIA);
-    const updateMobileViewport = () => setIsMobileViewport(mobileViewport.matches);
+    const coarsePointer = window.matchMedia('(pointer: coarse), (prefers-reduced-motion: reduce)');
+    const updateMobileViewport = () => {
+      setIsMobileViewport(mobileViewport.matches);
+      setUseLightEffects(mobileViewport.matches || coarsePointer.matches);
+    };
     updateMobileViewport();
+    setIsDeviceReady(true);
     mobileViewport.addEventListener('change', updateMobileViewport);
-    return () => mobileViewport.removeEventListener('change', updateMobileViewport);
+    coarsePointer.addEventListener('change', updateMobileViewport);
+    return () => {
+      mobileViewport.removeEventListener('change', updateMobileViewport);
+      coarsePointer.removeEventListener('change', updateMobileViewport);
+    };
   }, []);
 
   const revealHeroControls = useCallback((autoHide: boolean) => {
@@ -1414,9 +1494,8 @@ export default function Home() {
       setActiveHeroWorkIndex(0);
       const firstVideo = heroCarouselVideoRefs.current[0];
       if (firstVideo) {
-        if (!firstVideo.getAttribute('src')) firstVideo.src = heroWorks[0].src;
         firstVideo.currentTime = 0;
-        startHeroVideoPlayback(firstVideo);
+        if (!window.matchMedia(MOBILE_PAGE_MEDIA).matches) startHeroVideoPlayback(firstVideo);
       }
     }
     timelineExitArmedRef.current = false;
@@ -1533,8 +1612,12 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const stored = localStorage.getItem(TIMELINE_ORDER_KEY);
-    if (stored) setSavedTimelineOrder({ ...timelineAdminCatalog, ...JSON.parse(stored) });
+    try {
+      const stored = localStorage.getItem(TIMELINE_ORDER_KEY);
+      if (stored) setSavedTimelineOrder({ ...timelineAdminCatalog, ...JSON.parse(stored) });
+    } catch {
+      // Private browsing and stale saved data must never prevent the site loading.
+    }
   }, []);
 
   useEffect(() => {
@@ -2058,6 +2141,10 @@ export default function Home() {
     heroMainVideoRef.current = activeVideo ?? null;
     Object.entries(heroCarouselVideoRefs.current).forEach(([index, video]) => {
       if (!video) return;
+      if (!video.getAttribute('src')) {
+        if (video.currentSrc) { video.pause(); video.load(); }
+        return;
+      }
       if (!isHeroSurfaceActive) {
         video.dataset.playbackRequested = 'false';
         video.pause();
@@ -2136,6 +2223,7 @@ export default function Home() {
     heroExitStepRef.current = 0;
     setHeroTurn(index > previousIndex ? 'forward' : 'backward');
     setActiveHeroWorkIndex(index);
+    setHeroMediaStatus('loading');
     const video = heroCarouselVideoRefs.current[index];
     if (video) {
       heroMainVideoRef.current = video;
@@ -2234,7 +2322,7 @@ export default function Home() {
           }}
           onTouchCancel={() => { heroTouchStartRef.current = null; }}
         >
-          {!isMobileViewport && heroStage < 2 ? (
+          {isDeviceReady && !useLightEffects && heroStage < 2 && isHeroSurfaceActive ? (
             <div className="hero-ripple-layer" aria-hidden="true">
               <RippleDistortion
                 src="/images/hero-curved-grid.svg?v=3"
@@ -2263,11 +2351,11 @@ export default function Home() {
             key={ledVideoBurst.mode === 'carousel' ? ledVideoBurst.id : 'ambient'}
             aria-hidden="true"
           >
-            <CurvedLedVideo
+            {isDeviceReady && useLightEffects ? <MobileHeroBackground active={isHeroSurfaceActive && !isMobileHeroEngaged} /> : isDeviceReady ? <CurvedLedVideo
               active={isHeroSurfaceActive}
               burst={ledVideoBurst}
               syncSourceRef={heroMainVideoRef}
-            />
+            /> : null}
           </div>
           <div className="hero-title-block">
             <div className="hero-wordmark-line">
@@ -2312,11 +2400,9 @@ export default function Home() {
                 const isOpening = position === 'opening';
                 const isPreview = position === 'previous' || position === 'preview-first' || position === 'preview-second';
                 const isVisible = isActive || isOpening || isPreview;
-                const shouldLoadVideo = heroStage === 0
-                  ? index === 0
-                  : isMobileViewport
-                    ? index === activeHeroWorkIndex || (isMobileHeroEngaged && (Math.abs(index - activeHeroWorkIndex) <= 1 || index === activeHeroWorkIndex + 2))
-                    : index <= activeHeroWorkIndex + 2;
+                const shouldLoadVideo = isDeviceReady && isHeroSurfaceActive && (heroStage === 0
+                  ? index === 0 && !isMobileViewport
+                  : index === activeHeroWorkIndex && (!isMobileViewport || isMobileHeroEngaged));
                 return (
                   <div
                     className={`hero-carousel-card hero-carousel-card--${position}`}
@@ -2347,19 +2433,22 @@ export default function Home() {
                   >
                     <video
                       ref={(video) => { heroCarouselVideoRefs.current[index] = video; }}
-                      autoPlay={isOpening || (isActive && isMobileHeroEngaged)}
+                      autoPlay={shouldLoadVideo && (isOpening || (isActive && isMobileHeroEngaged))}
                       muted={isOpening || !isActive || heroStage !== 2}
                       playsInline
                       controlsList="nodownload noremoteplayback"
                       disablePictureInPicture
                       disableRemotePlayback
-                      poster={index === 0 ? '/images/hero-video-poster.jpg' : undefined}
-                      preload={(isActive && heroStage === 2 && (!isMobileViewport || isMobileHeroEngaged)) || isOpening
-                        ? 'auto'
-                        : isVisible ? 'metadata' : 'none'}
+                      poster={index === 0 ? '/images/hero-video-poster.jpg' : mediaPoster(work.src)}
+                      preload={shouldLoadVideo ? 'auto' : 'none'}
                       src={shouldLoadVideo ? work.src : undefined}
                       data-hero-video-index={index}
                       aria-label={isVisible ? work.title : undefined}
+                      onLoadStart={() => { if (isActive) setHeroMediaStatus('loading'); }}
+                      onWaiting={() => { if (isActive) setHeroMediaStatus('loading'); }}
+                      onPlaying={() => { if (isActive) setHeroMediaStatus('ready'); }}
+                      onCanPlay={() => { if (isActive) setHeroMediaStatus('ready'); }}
+                      onError={() => { if (isActive && shouldLoadVideo) setHeroMediaStatus('error'); }}
                       onLoadedMetadata={(event) => {
                         const video = event.currentTarget;
                         if (video.closest('.section-is-paused')) {
@@ -2416,6 +2505,18 @@ export default function Home() {
                       }}
                     />
                     <GlassSurface {...heroGlassSurfaceProps} className="hero-glass-frame hero-screen-glass" />
+                    {isActive && shouldLoadVideo && heroMediaStatus !== 'ready' ? (
+                      <div className="hero-video-status" role="status">
+                        {heroMediaStatus === 'error' ? <button type="button" onClick={() => {
+                          const video = heroCarouselVideoRefs.current[index];
+                          if (!video) return;
+                          setHeroMediaStatus('loading');
+                          video.src = work.src;
+                          video.load();
+                          startHeroVideoPlayback(video);
+                        }}>视频暂未加载成功，点击重试</button> : '视频缓冲中…'}
+                      </div>
+                    ) : null}
                     {isActive && heroStage === 2 && !isMobileHeroEngaged ? (
                       <button
                         className="hero-mobile-preview-trigger"
@@ -2568,7 +2669,7 @@ export default function Home() {
           ))}
         </nav>
         <div className="portfolio-balatro-background" aria-hidden="true">
-          {activeSectionId === 'timeline' ? (
+          {isDeviceReady && !useLightEffects && activeSectionId === 'timeline' ? (
             <Balatro
               spinRotation={-1.65}
               spinSpeed={2.45}
@@ -2945,7 +3046,7 @@ export default function Home() {
 
       <section className="innovation-page" id="process" aria-labelledby="innovation-page-title">
         <div className="innovation-page-background" aria-hidden="true">
-          {activeSectionId === 'process' ? (
+          {isDeviceReady && !useLightEffects && activeSectionId === 'process' ? (
             <Iridescence
               color={[1, 1, 1]}
               mouseReact={false}
@@ -3022,9 +3123,9 @@ export default function Home() {
             download="AI设计师简历.png"
             aria-label="下载 AI 设计师简历"
           >
-            <img src="/assets/lanyard/portfolio-card-front.svg?v=6" alt="乐湘浔个人简历卡片" />
+            <img src="/assets/lanyard/portfolio-card-front.svg?v=6" alt="乐湘浔个人简历卡片" loading="lazy" decoding="async" />
           </a>
-          {activeSectionId === 'downloads' ? (
+          {isDeviceReady && !useLightEffects && activeSectionId === 'downloads' ? (
             <Lanyard
               position={[0, 0, 14.5]}
               gravity={[0, -40, 0]}

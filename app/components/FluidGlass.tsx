@@ -85,6 +85,7 @@ export default function FluidGlass({
     const container = containerRef.current;
     const displacementImage = displacementImageRef.current;
     if (!container || !displacementImage) return;
+    if (!window.matchMedia('(hover: hover) and (pointer: fine) and (min-width: 761px)').matches) return;
 
     const updateMap = () => {
       const rect = container.getBoundingClientRect();

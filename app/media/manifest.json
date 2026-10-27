@@ -1,0 +1,670 @@
+{
+  "timeline-2026-big-fish-ai-remake.mp4": {
+    "src": "/media/playback/timeline-2026-big-fish-ai-remake.mp4",
+    "poster": "/media/v2/timeline-2026-big-fish-ai-remake.jpg",
+    "bytes": 5244514,
+    "originalBytes": 91890492,
+    "parts": [
+      {
+        "src": "/media/v2/timeline-2026-big-fish-ai-remake.mp4.part-000.bin",
+        "bytes": 4194304
+      },
+      {
+        "src": "/media/v2/timeline-2026-big-fish-ai-remake.mp4.part-001.bin",
+        "bytes": 1050210
+      }
+    ]
+  },
+  "recent-work-03.mp4": {
+    "src": "/media/playback/recent-work-03.mp4",
+    "poster": "/media/v2/recent-work-03.jpg",
+    "bytes": 8847138,
+    "originalBytes": 138335171,
+    "parts": [
+      {
+        "src": "/media/v2/recent-work-03.mp4.part-000.bin",
+        "bytes": 4194304
+      },
+      {
+        "src": "/media/v2/recent-work-03.mp4.part-001.bin",
+        "bytes": 4194304
+      },
+      {
+        "src": "/media/v2/recent-work-03.mp4.part-002.bin",
+        "bytes": 458530
+      }
+    ]
+  },
+  "timeline-2026-gundam-godzilla-test.mp4": {
+    "src": "/media/playback/timeline-2026-gundam-godzilla-test.mp4",
+    "poster": "/media/v2/timeline-2026-gundam-godzilla-test.jpg",
+    "bytes": 8250635,
+    "originalBytes": 114141905,
+    "parts": [
+      {
+        "src": "/media/v2/timeline-2026-gundam-godzilla-test.mp4.part-000.bin",
+        "bytes": 4194304
+      },
+      {
+        "src": "/media/v2/timeline-2026-gundam-godzilla-test.mp4.part-001.bin",
+        "bytes": 4056331
+      }
+    ]
+  },
+  "recent-work-01.mp4": {
+    "src": "/media/playback/recent-work-01.mp4",
+    "poster": "/media/v2/recent-work-01.jpg",
+    "bytes": 5792351,
+    "originalBytes": 64737476,
+    "parts": [
+      {
+        "src": "/media/v2/recent-work-01.mp4.part-000.bin",
+        "bytes": 4194304
+      },
+      {
+        "src": "/media/v2/recent-work-01.mp4.part-001.bin",
+        "bytes": 1598047
+      }
+    ]
+  },
+  "timeline-2026-animation-drama-preview.mp4": {
+    "src": "/media/playback/timeline-2026-animation-drama-preview.mp4",
+    "poster": "/media/v2/timeline-2026-animation-drama-preview.jpg",
+    "bytes": 14084319,
+    "originalBytes": 48972314,
+    "parts": [
+      {
+        "src": "/media/v2/timeline-2026-animation-drama-preview.mp4.part-000.bin",
+        "bytes": 4194304
+      },
+      {
+        "src": "/media/v2/timeline-2026-animation-drama-preview.mp4.part-001.bin",
+        "bytes": 4194304
+      },
+      {
+        "src": "/media/v2/timeline-2026-animation-drama-preview.mp4.part-002.bin",
+        "bytes": 4194304
+      },
+      {
+        "src": "/media/v2/timeline-2026-animation-drama-preview.mp4.part-003.bin",
+        "bytes": 1501407
+      }
+    ]
+  },
+  "timeline-2025-generated.mp4": {
+    "src": "/media/playback/timeline-2025-generated.mp4",
+    "poster": "/media/v2/timeline-2025-generated.jpg",
+    "bytes": 2195988,
+    "originalBytes": 27542929,
+    "parts": [
+      {
+        "src": "/media/v2/timeline-2025-generated.mp4",
+        "bytes": 2195988
+      }
+    ]
+  },
+  "timeline-2026-camera-language-prompt.mp4": {
+    "src": "/media/playback/timeline-2026-camera-language-prompt.mp4",
+    "poster": "/media/v2/timeline-2026-camera-language-prompt.jpg",
+    "bytes": 3993859,
+    "originalBytes": 47472176,
+    "parts": [
+      {
+        "src": "/media/v2/timeline-2026-camera-language-prompt.mp4",
+        "bytes": 3993859
+      }
+    ]
+  },
+  "timeline-2026-photoreal-drama-first.mp4": {
+    "src": "/media/playback/timeline-2026-photoreal-drama-first.mp4",
+    "poster": "/media/v2/timeline-2026-photoreal-drama-first.jpg",
+    "bytes": 5329430,
+    "originalBytes": 36610912,
+    "parts": [
+      {
+        "src": "/media/v2/timeline-2026-photoreal-drama-first.mp4.part-000.bin",
+        "bytes": 4194304
+      },
+      {
+        "src": "/media/v2/timeline-2026-photoreal-drama-first.mp4.part-001.bin",
+        "bytes": 1135126
+      }
+    ]
+  },
+  "timeline-2026-ancient-3d-drama-preview-01.mp4": {
+    "src": "/media/playback/timeline-2026-ancient-3d-drama-preview-01.mp4",
+    "poster": "/media/v2/timeline-2026-ancient-3d-drama-preview-01.jpg",
+    "bytes": 4552737,
+    "originalBytes": 31688820,
+    "parts": [
+      {
+        "src": "/media/v2/timeline-2026-ancient-3d-drama-preview-01.mp4.part-000.bin",
+        "bytes": 4194304
+      },
+      {
+        "src": "/media/v2/timeline-2026-ancient-3d-drama-preview-01.mp4.part-001.bin",
+        "bytes": 358433
+      }
+    ]
+  },
+  "timeline-2026-ancient-3d-drama-preview-02.mp4": {
+    "src": "/media/playback/timeline-2026-ancient-3d-drama-preview-02.mp4",
+    "poster": "/media/v2/timeline-2026-ancient-3d-drama-preview-02.jpg",
+    "bytes": 7498388,
+    "originalBytes": 88721415,
+    "parts": [
+      {
+        "src": "/media/v2/timeline-2026-ancient-3d-drama-preview-02.mp4.part-000.bin",
+        "bytes": 4194304
+      },
+      {
+        "src": "/media/v2/timeline-2026-ancient-3d-drama-preview-02.mp4.part-001.bin",
+        "bytes": 3304084
+      }
+    ]
+  },
+  "timeline-2026-ancient-3d-drama-opening-hook.mp4": {
+    "src": "/media/playback/timeline-2026-ancient-3d-drama-opening-hook.mp4",
+    "poster": "/media/v2/timeline-2026-ancient-3d-drama-opening-hook.jpg",
+    "bytes": 2889750,
+    "originalBytes": 10263498,
+    "parts": [
+      {
+        "src": "/media/v2/timeline-2026-ancient-3d-drama-opening-hook.mp4",
+        "bytes": 2889750
+      }
+    ]
+  },
+  "timeline-2026-seedance-2-5-micro-expression.mp4": {
+    "src": "/media/playback/timeline-2026-seedance-2-5-micro-expression.mp4",
+    "poster": "/media/v2/timeline-2026-seedance-2-5-micro-expression.jpg",
+    "bytes": 2030047,
+    "originalBytes": 45454731,
+    "parts": [
+      {
+        "src": "/media/v2/timeline-2026-seedance-2-5-micro-expression.mp4",
+        "bytes": 2030047
+      }
+    ]
+  },
+  "timeline-2026-first-person-prompt.mp4": {
+    "src": "/media/playback/timeline-2026-first-person-prompt.mp4",
+    "poster": "/media/v2/timeline-2026-first-person-prompt.jpg",
+    "bytes": 9233795,
+    "originalBytes": 145254042,
+    "parts": [
+      {
+        "src": "/media/v2/timeline-2026-first-person-prompt.mp4.part-000.bin",
+        "bytes": 4194304
+      },
+      {
+        "src": "/media/v2/timeline-2026-first-person-prompt.mp4.part-001.bin",
+        "bytes": 4194304
+      },
+      {
+        "src": "/media/v2/timeline-2026-first-person-prompt.mp4.part-002.bin",
+        "bytes": 845187
+      }
+    ]
+  },
+  "timeline-2026-first-person-full-film.mp4": {
+    "src": "/media/playback/timeline-2026-first-person-full-film.mp4",
+    "poster": "/media/v2/timeline-2026-first-person-full-film.jpg",
+    "bytes": 68303303,
+    "originalBytes": 230326616,
+    "parts": [
+      {
+        "src": "/media/v2/timeline-2026-first-person-full-film.mp4.part-000.bin",
+        "bytes": 4194304
+      },
+      {
+        "src": "/media/v2/timeline-2026-first-person-full-film.mp4.part-001.bin",
+        "bytes": 4194304
+      },
+      {
+        "src": "/media/v2/timeline-2026-first-person-full-film.mp4.part-002.bin",
+        "bytes": 4194304
+      },
+      {
+        "src": "/media/v2/timeline-2026-first-person-full-film.mp4.part-003.bin",
+        "bytes": 4194304
+      },
+      {
+        "src": "/media/v2/timeline-2026-first-person-full-film.mp4.part-004.bin",
+        "bytes": 4194304
+      },
+      {
+        "src": "/media/v2/timeline-2026-first-person-full-film.mp4.part-005.bin",
+        "bytes": 4194304
+      },
+      {
+        "src": "/media/v2/timeline-2026-first-person-full-film.mp4.part-006.bin",
+        "bytes": 4194304
+      },
+      {
+        "src": "/media/v2/timeline-2026-first-person-full-film.mp4.part-007.bin",
+        "bytes": 4194304
+      },
+      {
+        "src": "/media/v2/timeline-2026-first-person-full-film.mp4.part-008.bin",
+        "bytes": 4194304
+      },
+      {
+        "src": "/media/v2/timeline-2026-first-person-full-film.mp4.part-009.bin",
+        "bytes": 4194304
+      },
+      {
+        "src": "/media/v2/timeline-2026-first-person-full-film.mp4.part-010.bin",
+        "bytes": 4194304
+      },
+      {
+        "src": "/media/v2/timeline-2026-first-person-full-film.mp4.part-011.bin",
+        "bytes": 4194304
+      },
+      {
+        "src": "/media/v2/timeline-2026-first-person-full-film.mp4.part-012.bin",
+        "bytes": 4194304
+      },
+      {
+        "src": "/media/v2/timeline-2026-first-person-full-film.mp4.part-013.bin",
+        "bytes": 4194304
+      },
+      {
+        "src": "/media/v2/timeline-2026-first-person-full-film.mp4.part-014.bin",
+        "bytes": 4194304
+      },
+      {
+        "src": "/media/v2/timeline-2026-first-person-full-film.mp4.part-015.bin",
+        "bytes": 4194304
+      },
+      {
+        "src": "/media/v2/timeline-2026-first-person-full-film.mp4.part-016.bin",
+        "bytes": 1194439
+      }
+    ]
+  },
+  "timeline-2026-camera-movement-study.mp4": {
+    "src": "/media/playback/timeline-2026-camera-movement-study.mp4",
+    "poster": "/media/v2/timeline-2026-camera-movement-study.jpg",
+    "bytes": 3292889,
+    "originalBytes": 134953048,
+    "parts": [
+      {
+        "src": "/media/v2/timeline-2026-camera-movement-study.mp4",
+        "bytes": 3292889
+      }
+    ]
+  },
+  "timeline-2026-model-test-01.mp4": {
+    "src": "/media/playback/timeline-2026-model-test-01.mp4",
+    "poster": "/media/v2/timeline-2026-model-test-01.jpg",
+    "bytes": 1201981,
+    "originalBytes": 19811662,
+    "parts": [
+      {
+        "src": "/media/v2/timeline-2026-model-test-01.mp4",
+        "bytes": 1201981
+      }
+    ]
+  },
+  "timeline-2026-model-test-02.mp4": {
+    "src": "/media/playback/timeline-2026-model-test-02.mp4",
+    "poster": "/media/v2/timeline-2026-model-test-02.jpg",
+    "bytes": 867704,
+    "originalBytes": 6758992,
+    "parts": [
+      {
+        "src": "/media/v2/timeline-2026-model-test-02.mp4",
+        "bytes": 867704
+      }
+    ]
+  },
+  "timeline-2026-model-test-03.mp4": {
+    "src": "/media/playback/timeline-2026-model-test-03.mp4",
+    "poster": "/media/v2/timeline-2026-model-test-03.jpg",
+    "bytes": 1124554,
+    "originalBytes": 17580133,
+    "parts": [
+      {
+        "src": "/media/v2/timeline-2026-model-test-03.mp4",
+        "bytes": 1124554
+      }
+    ]
+  },
+  "timeline-2026-model-test-04.mp4": {
+    "src": "/media/playback/timeline-2026-model-test-04.mp4",
+    "poster": "/media/v2/timeline-2026-model-test-04.jpg",
+    "bytes": 1028053,
+    "originalBytes": 20786913,
+    "parts": [
+      {
+        "src": "/media/v2/timeline-2026-model-test-04.mp4",
+        "bytes": 1028053
+      }
+    ]
+  },
+  "timeline-2026-model-test-05.mp4": {
+    "src": "/media/playback/timeline-2026-model-test-05.mp4",
+    "poster": "/media/v2/timeline-2026-model-test-05.jpg",
+    "bytes": 924119,
+    "originalBytes": 8027400,
+    "parts": [
+      {
+        "src": "/media/v2/timeline-2026-model-test-05.mp4",
+        "bytes": 924119
+      }
+    ]
+  },
+  "timeline-2026-model-test-06.mp4": {
+    "src": "/media/playback/timeline-2026-model-test-06.mp4",
+    "poster": "/media/v2/timeline-2026-model-test-06.jpg",
+    "bytes": 913707,
+    "originalBytes": 8150895,
+    "parts": [
+      {
+        "src": "/media/v2/timeline-2026-model-test-06.mp4",
+        "bytes": 913707
+      }
+    ]
+  },
+  "timeline-2026-company-logo-01.mp4": {
+    "src": "/media/playback/timeline-2026-company-logo-01.mp4",
+    "poster": "/media/v2/timeline-2026-company-logo-01.jpg",
+    "bytes": 1531009,
+    "originalBytes": 4413558,
+    "parts": [
+      {
+        "src": "/media/v2/timeline-2026-company-logo-01.mp4",
+        "bytes": 1531009
+      }
+    ]
+  },
+  "timeline-2026-company-logo-02.mp4": {
+    "src": "/media/playback/timeline-2026-company-logo-02.mp4",
+    "poster": "/media/v2/timeline-2026-company-logo-02.jpg",
+    "bytes": 1462758,
+    "originalBytes": 3947655,
+    "parts": [
+      {
+        "src": "/media/v2/timeline-2026-company-logo-02.mp4",
+        "bytes": 1462758
+      }
+    ]
+  },
+  "timeline-2026-company-logo-03.mp4": {
+    "src": "/media/playback/timeline-2026-company-logo-03.mp4",
+    "poster": "/media/v2/timeline-2026-company-logo-03.jpg",
+    "bytes": 1029774,
+    "originalBytes": 2538557,
+    "parts": [
+      {
+        "src": "/media/v2/timeline-2026-company-logo-03.mp4",
+        "bytes": 1029774
+      }
+    ]
+  },
+  "timeline-2026-company-promo-film.mp4": {
+    "src": "/media/playback/timeline-2026-company-promo-film.mp4",
+    "poster": "/media/v2/timeline-2026-company-promo-film.jpg",
+    "bytes": 2856516,
+    "originalBytes": 10700971,
+    "parts": [
+      {
+        "src": "/media/v2/timeline-2026-company-promo-film.mp4",
+        "bytes": 2856516
+      }
+    ]
+  },
+  "timeline-2026-3d-animation-production.mp4": {
+    "src": "/media/playback/timeline-2026-3d-animation-production.mp4",
+    "poster": "/media/v2/timeline-2026-3d-animation-production.jpg",
+    "bytes": 11213767,
+    "originalBytes": 127520703,
+    "parts": [
+      {
+        "src": "/media/v2/timeline-2026-3d-animation-production.mp4.part-000.bin",
+        "bytes": 4194304
+      },
+      {
+        "src": "/media/v2/timeline-2026-3d-animation-production.mp4.part-001.bin",
+        "bytes": 4194304
+      },
+      {
+        "src": "/media/v2/timeline-2026-3d-animation-production.mp4.part-002.bin",
+        "bytes": 2825159
+      }
+    ]
+  },
+  "timeline-2026-micro-expression-test-01.mp4": {
+    "src": "/media/playback/timeline-2026-micro-expression-test-01.mp4",
+    "poster": "/media/v2/timeline-2026-micro-expression-test-01.jpg",
+    "bytes": 2084800,
+    "originalBytes": 48682769,
+    "parts": [
+      {
+        "src": "/media/v2/timeline-2026-micro-expression-test-01.mp4",
+        "bytes": 2084800
+      }
+    ]
+  },
+  "timeline-2026-micro-expression-test-02.mp4": {
+    "src": "/media/playback/timeline-2026-micro-expression-test-02.mp4",
+    "poster": "/media/v2/timeline-2026-micro-expression-test-02.jpg",
+    "bytes": 4548488,
+    "originalBytes": 3122438,
+    "parts": [
+      {
+        "src": "/media/v2/timeline-2026-micro-expression-test-02.mp4.part-000.bin",
+        "bytes": 4194304
+      },
+      {
+        "src": "/media/v2/timeline-2026-micro-expression-test-02.mp4.part-001.bin",
+        "bytes": 354184
+      }
+    ]
+  },
+  "timeline-2026-douyin-trend-03.mp4": {
+    "src": "/media/playback/timeline-2026-douyin-trend-03.mp4",
+    "poster": "/media/v2/timeline-2026-douyin-trend-03.jpg",
+    "bytes": 2955297,
+    "originalBytes": 11232835,
+    "parts": [
+      {
+        "src": "/media/v2/timeline-2026-douyin-trend-03.mp4",
+        "bytes": 2955297
+      }
+    ]
+  },
+  "timeline-2026-douyin-trend-09.mp4": {
+    "src": "/media/playback/timeline-2026-douyin-trend-09.mp4",
+    "poster": "/media/v2/timeline-2026-douyin-trend-09.jpg",
+    "bytes": 8209514,
+    "originalBytes": 93539090,
+    "parts": [
+      {
+        "src": "/media/v2/timeline-2026-douyin-trend-09.mp4.part-000.bin",
+        "bytes": 4194304
+      },
+      {
+        "src": "/media/v2/timeline-2026-douyin-trend-09.mp4.part-001.bin",
+        "bytes": 4015210
+      }
+    ]
+  },
+  "timeline-2026-douyin-trend-01.mp4": {
+    "src": "/media/playback/timeline-2026-douyin-trend-01.mp4",
+    "poster": "/media/v2/timeline-2026-douyin-trend-01.jpg",
+    "bytes": 5827627,
+    "originalBytes": 65871932,
+    "parts": [
+      {
+        "src": "/media/v2/timeline-2026-douyin-trend-01.mp4.part-000.bin",
+        "bytes": 4194304
+      },
+      {
+        "src": "/media/v2/timeline-2026-douyin-trend-01.mp4.part-001.bin",
+        "bytes": 1633323
+      }
+    ]
+  },
+  "timeline-2026-douyin-trend-02.mp4": {
+    "src": "/media/playback/timeline-2026-douyin-trend-02.mp4",
+    "poster": "/media/v2/timeline-2026-douyin-trend-02.jpg",
+    "bytes": 5421397,
+    "originalBytes": 60723227,
+    "parts": [
+      {
+        "src": "/media/v2/timeline-2026-douyin-trend-02.mp4.part-000.bin",
+        "bytes": 4194304
+      },
+      {
+        "src": "/media/v2/timeline-2026-douyin-trend-02.mp4.part-001.bin",
+        "bytes": 1227093
+      }
+    ]
+  },
+  "timeline-2026-douyin-trend-04.mp4": {
+    "src": "/media/playback/timeline-2026-douyin-trend-04.mp4",
+    "poster": "/media/v2/timeline-2026-douyin-trend-04.jpg",
+    "bytes": 3583130,
+    "originalBytes": 35277515,
+    "parts": [
+      {
+        "src": "/media/v2/timeline-2026-douyin-trend-04.mp4",
+        "bytes": 3583130
+      }
+    ]
+  },
+  "timeline-2026-douyin-trend-05.mp4": {
+    "src": "/media/playback/timeline-2026-douyin-trend-05.mp4",
+    "poster": "/media/v2/timeline-2026-douyin-trend-05.jpg",
+    "bytes": 6398972,
+    "originalBytes": 99700844,
+    "parts": [
+      {
+        "src": "/media/v2/timeline-2026-douyin-trend-05.mp4.part-000.bin",
+        "bytes": 4194304
+      },
+      {
+        "src": "/media/v2/timeline-2026-douyin-trend-05.mp4.part-001.bin",
+        "bytes": 2204668
+      }
+    ]
+  },
+  "timeline-2026-douyin-trend-06.mp4": {
+    "src": "/media/playback/timeline-2026-douyin-trend-06.mp4",
+    "poster": "/media/v2/timeline-2026-douyin-trend-06.jpg",
+    "bytes": 2954747,
+    "originalBytes": 47740141,
+    "parts": [
+      {
+        "src": "/media/v2/timeline-2026-douyin-trend-06.mp4",
+        "bytes": 2954747
+      }
+    ]
+  },
+  "timeline-2026-douyin-trend-07.mp4": {
+    "src": "/media/playback/timeline-2026-douyin-trend-07.mp4",
+    "poster": "/media/v2/timeline-2026-douyin-trend-07.jpg",
+    "bytes": 2939820,
+    "originalBytes": 9143385,
+    "parts": [
+      {
+        "src": "/media/v2/timeline-2026-douyin-trend-07.mp4",
+        "bytes": 2939820
+      }
+    ]
+  },
+  "timeline-2026-douyin-trend-08.mp4": {
+    "src": "/media/playback/timeline-2026-douyin-trend-08.mp4",
+    "poster": "/media/v2/timeline-2026-douyin-trend-08.jpg",
+    "bytes": 7808406,
+    "originalBytes": 134895254,
+    "parts": [
+      {
+        "src": "/media/v2/timeline-2026-douyin-trend-08.mp4.part-000.bin",
+        "bytes": 4194304
+      },
+      {
+        "src": "/media/v2/timeline-2026-douyin-trend-08.mp4.part-001.bin",
+        "bytes": 3614102
+      }
+    ]
+  },
+  "timeline-2026-douyin-tutorial-01.mp4": {
+    "src": "/media/playback/timeline-2026-douyin-tutorial-01.mp4",
+    "poster": "/media/v2/timeline-2026-douyin-tutorial-01.jpg",
+    "bytes": 16386030,
+    "originalBytes": 179008395,
+    "parts": [
+      {
+        "src": "/media/v2/timeline-2026-douyin-tutorial-01.mp4.part-000.bin",
+        "bytes": 4194304
+      },
+      {
+        "src": "/media/v2/timeline-2026-douyin-tutorial-01.mp4.part-001.bin",
+        "bytes": 4194304
+      },
+      {
+        "src": "/media/v2/timeline-2026-douyin-tutorial-01.mp4.part-002.bin",
+        "bytes": 4194304
+      },
+      {
+        "src": "/media/v2/timeline-2026-douyin-tutorial-01.mp4.part-003.bin",
+        "bytes": 3803118
+      }
+    ]
+  },
+  "timeline-2026-douyin-tutorial-02.mp4": {
+    "src": "/media/playback/timeline-2026-douyin-tutorial-02.mp4",
+    "poster": "/media/v2/timeline-2026-douyin-tutorial-02.jpg",
+    "bytes": 10369614,
+    "originalBytes": 118400896,
+    "parts": [
+      {
+        "src": "/media/v2/timeline-2026-douyin-tutorial-02.mp4.part-000.bin",
+        "bytes": 4194304
+      },
+      {
+        "src": "/media/v2/timeline-2026-douyin-tutorial-02.mp4.part-001.bin",
+        "bytes": 4194304
+      },
+      {
+        "src": "/media/v2/timeline-2026-douyin-tutorial-02.mp4.part-002.bin",
+        "bytes": 1981006
+      }
+    ]
+  },
+  "recent-work-02.mp4": {
+    "src": "/media/playback/recent-work-02.mp4",
+    "poster": "/media/v2/recent-work-02.jpg",
+    "bytes": 9695995,
+    "originalBytes": 142189429,
+    "parts": [
+      {
+        "src": "/media/v2/recent-work-02.mp4.part-000.bin",
+        "bytes": 4194304
+      },
+      {
+        "src": "/media/v2/recent-work-02.mp4.part-001.bin",
+        "bytes": 4194304
+      },
+      {
+        "src": "/media/v2/recent-work-02.mp4.part-002.bin",
+        "bytes": 1307387
+      }
+    ]
+  },
+  "workflow-06-final-hospital.mp4": {
+    "src": "/media/playback/workflow-06-final-hospital.mp4",
+    "poster": "/media/v2/workflow-06-final-hospital.jpg",
+    "bytes": 1518301,
+    "originalBytes": 12140725,
+    "parts": [
+      {
+        "src": "/media/v2/workflow-06-final-hospital.mp4",
+        "bytes": 1518301
+      }
+    ]
+  }
+}

@@ -121,8 +121,9 @@ export default function AgencyMotion({ timelineKey }: AgencyMotionProps) {
 
     const shouldPlayOpening = location.hash === '' || location.hash === '#top';
     if (shouldPlayOpening) {
-      animateHero();
-      timers.push(window.setTimeout(() => setShowOpening(false), 3400));
+      const mobile = window.matchMedia('(max-width: 760px), (prefers-reduced-motion: reduce)').matches;
+      if (!mobile) animateHero();
+      timers.push(window.setTimeout(() => setShowOpening(false), mobile ? 1100 : 3400));
     } else {
       setShowOpening(false);
     }
@@ -205,6 +206,7 @@ export default function AgencyMotion({ timelineKey }: AgencyMotionProps) {
   }, []);
 
   useEffect(() => {
+    if (window.matchMedia('(max-width: 760px), (pointer: coarse)').matches) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const timers: number[] = [];
     const animations: Animation[] = [];
@@ -257,6 +259,7 @@ export default function AgencyMotion({ timelineKey }: AgencyMotionProps) {
   }, [timelineKey]);
 
   useEffect(() => {
+    if (window.matchMedia('(max-width: 760px), (pointer: coarse)').matches) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const media = Array.from(document.querySelectorAll<HTMLElement>(
       '#process .process-image img, #process .latest-visual img',

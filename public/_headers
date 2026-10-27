@@ -1,0 +1,5 @@
+/media/v2/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/videos/hero-preview-720p-v1.mp4
+  Cache-Control: public, max-age=31536000, immutable

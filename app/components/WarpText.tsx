@@ -82,6 +82,7 @@ export default function WarpText({
     const root = rootRef.current;
     if (!root) return;
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduceMotion || !window.matchMedia('(hover: hover) and (pointer: fine) and (min-width: 761px)').matches) return;
     let renderer: Renderer | null = null;
     let raf = 0;
     let disposed = false;

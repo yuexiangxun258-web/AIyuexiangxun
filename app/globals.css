@@ -1,5 +1,7 @@
 @import 'tailwindcss';
 
+.media-retry { display: block; width: 100%; padding: 14px; border: 1px solid #caff55; border-radius: 12px; color: #fff; background: #171c25; cursor: pointer; }
+
 :root {
   --paper: #ecffbf;
   --ink: #17191a;
@@ -1899,3 +1901,36 @@ main video { display: block; width: 100%; height: auto; max-width: 100%; max-hei
     object-fit: contain;
   }
 }
+
+/* Keep mobile playback in the hardware decoder rather than a canvas compositor. */
+.hero-led-video-screen--native > video.hero-native-background {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  opacity: 1;
+  object-fit: cover;
+  filter: brightness(.7);
+}
+@media (max-width: 760px), (pointer: coarse) {
+  .fluid-glass--refractive {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: linear-gradient(120deg, rgba(225,244,245,.75), rgba(125,150,176,.8));
+  }
+  .fluid-glass::after, .fluid-glass__flow { animation: none; }
+  .hero-led-video-screen--native { will-change: auto; }
+  .hero-ripple-layer { display: none; }
+  .hero-screen-glass::before, .hero-screen-glass::after { filter: none; }
+  .agency-opening-panel--top, .agency-opening-panel--bottom { animation-duration: .7s; animation-delay: .25s; }
+  .agency-opening-mark { animation-duration: 1s; }
+  .portfolio-balatro-background, .innovation-page-background {
+    background: radial-gradient(ellipse at 18% 25%, #14a9b9, transparent 60%), radial-gradient(ellipse at 78% 70%, #8b357f, transparent 60%), #101c30;
+    background-size: 150% 150%;
+    animation: section-background-drift 16s ease-in-out infinite alternate;
+  }
+  .download-card-fallback { opacity: 1; visibility: visible; }
+}
+.hero-video-status { position: absolute; z-index: 9; left: 12px; top: 12px; max-width: calc(100% - 24px); border-radius: 12px; padding: 8px 12px; color: white; background: rgba(10,15,24,.85); font-size: 13px; }
+.hero-video-status button { border: 0; color: inherit; background: none; cursor: pointer; }

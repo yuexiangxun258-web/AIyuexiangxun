@@ -24,6 +24,7 @@ const clamp = (value: number, min: number, max: number) => Math.min(Math.max(val
 
 export default function SpecularFrames({ activeSectionId, timelineKey }: { activeSectionId: string; timelineKey: string }) {
   useEffect(() => {
+    if (!window.matchMedia('(hover: hover) and (pointer: fine) and (min-width: 761px)').matches) return;
     let targets: HTMLElement[] = [];
     let frame = 0;
     let syncFrame = 0;
