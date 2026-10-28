@@ -1536,11 +1536,17 @@ export default function Home() {
   }, [activateSection]);
 
   useEffect(() => {
-    const unlockHeroSound = () => {
+    let attemptedSoundUnlock = false;
+    const unlockHeroSound = (event: Event) => {
+      if (attemptedSoundUnlock) return;
+      if (event.target instanceof Element && event.target.closest('button, input, a, [role="button"]')) return;
       if (heroStageRef.current !== 2 || window.scrollY > 4 || location.hash === '#timeline') return;
       if (window.matchMedia(MOBILE_PAGE_MEDIA).matches) return;
       const video = heroCarouselVideoRefs.current[heroWorkIndexRef.current];
-      if (video) startHeroVideoPlayback(video);
+      if (video && video.muted && !video.paused) {
+        attemptedSoundUnlock = true;
+        startHeroVideoPlayback(video);
+      }
     };
 
     window.addEventListener('pointerdown', unlockHeroSound, true);
