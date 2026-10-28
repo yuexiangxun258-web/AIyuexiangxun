@@ -26,27 +26,45 @@ export default function SpecularFrames({ activeSectionId, timelineKey }: { activ
   useEffect(() => {
     if (!window.matchMedia('(hover: hover) and (pointer: fine) and (min-width: 761px)').matches) return;
     let targets: HTMLElement[] = [];
+    const visibleTargets = new Set<HTMLElement>();
     let frame = 0;
     let syncFrame = 0;
     let pointerX = window.innerWidth * 0.5;
     let pointerY = window.innerHeight * 0.5;
     const root = document.getElementById(activeSectionId);
     if (!root) return;
+    const visibilityObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        const target = entry.target as HTMLElement;
+        if (entry.isIntersecting) visibleTargets.add(target);
+        else visibleTargets.delete(target);
+      });
+      schedulePaint();
+    }, { rootMargin: '100px' });
 
     const syncTargets = () => {
-      targets = Array.from(root.querySelectorAll<HTMLElement>(SPECULAR_TARGETS));
-      targets.forEach((target) => {
+      const nextTargets = Array.from(root.querySelectorAll<HTMLElement>(SPECULAR_TARGETS));
+      const previousTargets = new Set(targets);
+      targets.filter((target) => !nextTargets.includes(target)).forEach((target) => {
+        visibilityObserver.unobserve(target);
+        visibleTargets.delete(target);
+      });
+      nextTargets.filter((target) => !previousTargets.has(target)).forEach((target) => {
         target.dataset.specular = 'true';
         target.style.setProperty('--specular-x', '18%');
         target.style.setProperty('--specular-y', '12%');
         target.style.setProperty('--specular-angle', '135deg');
+        visibilityObserver.observe(target);
       });
+      targets = nextTargets;
     };
 
     const paint = () => {
       frame = 0;
-      targets.forEach((target) => {
-        const rect = target.getBoundingClientRect();
+      // Finish layout reads before writing CSS variables. Interleaving them
+      // forces a fresh style/layout pass for every reflective card.
+      const measurements = Array.from(visibleTargets, (target) => ({ target, rect: target.getBoundingClientRect() }));
+      measurements.forEach(({ target, rect }) => {
         if (rect.width === 0 || rect.height === 0 || rect.bottom < -280 || rect.top > window.innerHeight + 280) return;
 
         const dx = Math.max(rect.left - pointerX, 0, pointerX - rect.right);
@@ -66,10 +84,14 @@ export default function SpecularFrames({ activeSectionId, timelineKey }: { activ
       });
     };
 
+    function schedulePaint() {
+      if (!frame) frame = window.requestAnimationFrame(paint);
+    }
+
     const onPointerMove = (event: PointerEvent) => {
       pointerX = event.clientX;
       pointerY = event.clientY;
-      if (!frame) frame = window.requestAnimationFrame(paint);
+      schedulePaint();
     };
 
     const scheduleSync = () => {
@@ -77,24 +99,30 @@ export default function SpecularFrames({ activeSectionId, timelineKey }: { activ
       syncFrame = window.requestAnimationFrame(() => {
         syncFrame = 0;
         syncTargets();
-        paint();
+        schedulePaint();
       });
     };
 
     syncTargets();
-    const observer = new MutationObserver(scheduleSync);
+    const observer = new MutationObserver((records) => {
+      if (records.some((record) => [...record.addedNodes, ...record.removedNodes].some((node) =>
+        node instanceof Element && (node.matches(SPECULAR_TARGETS) || node.querySelector(SPECULAR_TARGETS)),
+      ))) scheduleSync();
+    });
     observer.observe(root, { childList: true, subtree: true });
     const supportsPointerEffects = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
     if (supportsPointerEffects) window.addEventListener('pointermove', onPointerMove, { passive: true });
-    window.addEventListener('resize', paint, { passive: true });
-    paint();
+    window.addEventListener('resize', schedulePaint, { passive: true });
+    window.addEventListener('scroll', schedulePaint, { passive: true });
 
     return () => {
       if (frame) window.cancelAnimationFrame(frame);
       if (syncFrame) window.cancelAnimationFrame(syncFrame);
       observer.disconnect();
+      visibilityObserver.disconnect();
       if (supportsPointerEffects) window.removeEventListener('pointermove', onPointerMove);
-      window.removeEventListener('resize', paint);
+      window.removeEventListener('resize', schedulePaint);
+      window.removeEventListener('scroll', schedulePaint);
       targets.forEach((target) => {
         delete target.dataset.specular;
         target.style.removeProperty('--specular-x');

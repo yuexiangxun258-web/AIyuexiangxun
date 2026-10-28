@@ -1,6 +1,6 @@
 'use client';
 
-import { type CSSProperties, type RefObject, type VideoHTMLAttributes, useCallback, useEffect, useRef, useState } from 'react';
+import { type CSSProperties, type RefObject, type VideoHTMLAttributes, memo, useCallback, useDeferredValue, useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { orderItems, TIMELINE_ORDER_KEY, TimelineOrder, timelineAdminCatalog } from './timeline-order';
 import CircularGallery from './CircularGallery';
@@ -9,6 +9,7 @@ import FluidGlass from './components/FluidGlass';
 import SpecularFrames from './components/SpecularFrames';
 import WarpText from './components/WarpText';
 import AgencyMotion from './components/AgencyMotion';
+import HeroVideoControls from './components/HeroVideoControls';
 import mediaManifest from './media/manifest.json';
 
 const RippleDistortion = dynamic(() => import('./components/RippleDistortion'), { ssr: false });
@@ -25,7 +26,8 @@ const videoPreview = (src: string) => src;
 const R2_VIDEO_BASE_URL = 'https://media.aiyuexiangxun.xyz/videos';
 const webMedia = mediaManifest as Record<string, { src: string; poster: string }>;
 const r2Video = (filename: string) => webMedia[filename]?.src ?? `${R2_VIDEO_BASE_URL}/${filename}`;
-const mediaPoster = (src: string) => Object.values(webMedia).find((media) => media.src === src)?.poster;
+const mediaPosters = new Map(Object.values(webMedia).map((media) => [media.src, media.poster]));
+const mediaPoster = (src: string) => mediaPosters.get(src);
 const MOBILE_PAGE_MEDIA = '(max-width: 760px)';
 const NATIVE_TOUCH_SCROLL_MEDIA = '(hover: none), (pointer: coarse), (max-width: 760px)';
 
@@ -278,11 +280,7 @@ const heroWorks = [openingHeroWork, ...recentWorks];
 
 type HeroTurn = 'idle' | 'forward' | 'backward';
 
-const formatHeroTime = (seconds: number) => {
-  const safeSeconds = Number.isFinite(seconds) ? Math.max(0, seconds) : 0;
-  const minutes = Math.floor(safeSeconds / 60);
-  return `${minutes}:${String(Math.floor(safeSeconds % 60)).padStart(2, '0')}`;
-};
+
 
 const startHeroVideoPlayback = (video: HTMLVideoElement) => {
   if (!video.isConnected || video.closest('.section-is-paused')) {
@@ -1317,6 +1315,7 @@ const timelineYearHoverLabels: Record<string, string> = {
 
 const gooeyParticleColors = ['#7dfff0', '#ffffff', '#ff8bd8', '#8aa8ff', '#dfff79'];
 
+
 export default function Home() {
   const heroIntroRef = useRef<HTMLDivElement | null>(null);
   const siteNavRef = useRef<HTMLElement | null>(null);
@@ -1352,7 +1351,7 @@ export default function Home() {
   const [heroStage, setHeroStage] = useState(0);
   const [activeHeroWorkIndex, setActiveHeroWorkIndex] = useState(0);
   const [heroTurn, setHeroTurn] = useState<HeroTurn>('idle');
-  const [heroPlayback, setHeroPlayback] = useState({ currentTime: 0, duration: 0, paused: true, muted: false });
+  const [isHeroPaused, setIsHeroPaused] = useState(true);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
   const [isDeviceReady, setIsDeviceReady] = useState(false);
   const [useLightEffects, setUseLightEffects] = useState(true);
@@ -1360,6 +1359,7 @@ export default function Home() {
   const [isHeroControlsVisible, setIsHeroControlsVisible] = useState(false);
   const [isHeroSurfaceActive, setIsHeroSurfaceActive] = useState(true);
   const [activeTimelineYear, setActiveTimelineYear] = useState(timeline[0].year);
+  const displayedTimelineYear = useDeferredValue(activeTimelineYear);
   const [isTimelineYearRailVisible, setIsTimelineYearRailVisible] = useState(false);
   const [activeSectionId, setActiveSectionId] = useState('top');
   const [isContactSceneReady, setIsContactSceneReady] = useState(false);
@@ -1407,8 +1407,8 @@ export default function Home() {
       setIsHeroControlsVisible(false);
       return;
     }
-    revealHeroControls(!heroPlayback.paused);
-  }, [activeHeroWorkIndex, heroPlayback.paused, heroStage, isMobileHeroEngaged, isMobileViewport, revealHeroControls]);
+    revealHeroControls(!isHeroPaused);
+  }, [activeHeroWorkIndex, isHeroPaused, heroStage, isMobileHeroEngaged, isMobileViewport, revealHeroControls]);
 
   useEffect(() => () => {
     if (heroControlsHideTimerRef.current !== null) window.clearTimeout(heroControlsHideTimerRef.current);
@@ -1430,9 +1430,11 @@ export default function Home() {
         ? ['HOME', 'PORTFOLIO', 'PROCESS', 'CONTACT']
         : ['首页', '作品集', '流程及创新', '和我联系'])[index] ?? '';
       pillLabel.classList.toggle('is-english', showEnglish);
-      pillLabel.classList.remove('is-switching');
-      void pillLabel.offsetWidth;
-      pillLabel.classList.add('is-switching');
+      pillLabel.getAnimations().forEach((animation) => animation.cancel());
+      pillLabel.animate([
+        { opacity: .25, transform: 'translateY(6px)' },
+        { opacity: 1, transform: 'translateY(0)' },
+      ], { duration: 240, easing: 'ease-out' });
     }
   }, []);
 
@@ -1454,6 +1456,7 @@ export default function Home() {
     }
     activeSectionIdRef.current = activeId;
     setActiveSectionId(activeId);
+    if (activeId !== 'downloads') setIsContactSceneReady(false);
     pauseInactiveSections(activeId);
     setIsHeroSurfaceActive(activeId === 'top');
     if (activeId === 'top') {
@@ -1655,7 +1658,7 @@ export default function Home() {
       window.removeEventListener('resize', scheduleTimelineYearRailUpdate);
       window.removeEventListener('hashchange', scheduleTimelineYearRailUpdate);
     };
-  }, []);
+  }, [activeSectionId, displayedTimelineYear]);
 
   useEffect(() => {
     const sections = Array.from(document.querySelectorAll<HTMLElement>('main > section'));
@@ -1778,12 +1781,7 @@ export default function Home() {
         video.dataset.playbackRequested = 'false';
         video.pause();
         video.muted = true;
-        setHeroPlayback({
-          currentTime: video.currentTime,
-          duration: Number.isFinite(video.duration) ? video.duration : 0,
-          paused: true,
-          muted: true,
-        });
+        setIsHeroPaused(video.paused);
       });
       return () => window.cancelAnimationFrame(frame);
     }
@@ -2158,12 +2156,7 @@ export default function Home() {
         } else {
           startHeroVideoPlayback(video);
         }
-        setHeroPlayback({
-          currentTime: video.currentTime,
-          duration: Number.isFinite(video.duration) ? video.duration : 0,
-          paused: video.paused,
-          muted: video.muted,
-        });
+        setIsHeroPaused(video.paused);
       } else if (heroStage === 0 && Number(index) === 0) {
         video.muted = true;
         void video.play().catch(() => undefined);
@@ -2175,13 +2168,7 @@ export default function Home() {
     });
   }, [activeHeroWorkIndex, heroStage, isHeroSurfaceActive, isMobileHeroEngaged]);
 
-  const pauseOtherModelVideos = (activeVideo: HTMLVideoElement) => {
-    document.querySelectorAll<HTMLVideoElement>('.timeline-model-video-strip video').forEach((video) => {
-      if (video !== activeVideo && !video.paused) {
-        video.pause();
-      }
-    });
-  };
+
 
   const showTimelineYear = (year: string) => {
     timelineReturnArmedRef.current = false;
@@ -2232,6 +2219,11 @@ export default function Home() {
     }
   };
 
+  const requestHeroPlay = useCallback((video: HTMLVideoElement) => {
+    if (window.matchMedia(MOBILE_PAGE_MEDIA).matches) setIsMobileHeroEngaged(true);
+    startHeroVideoPlayback(video);
+  }, []);
+
   const stepHeroWork = (direction: -1 | 1) => {
     const nextIndex = Math.max(0, Math.min(heroWorks.length - 1, heroWorkIndexRef.current + direction));
     if (nextIndex !== heroWorkIndexRef.current) selectHeroWork(nextIndex);
@@ -2249,8 +2241,8 @@ export default function Home() {
         if (target instanceof HTMLImageElement || target instanceof HTMLVideoElement) event.preventDefault();
       }}
     >
-      <AgencyMotion timelineKey={activeTimelineYear} />
-      <SpecularFrames activeSectionId={activeSectionId} timelineKey={activeTimelineYear} />
+      <AgencyMotion timelineKey={displayedTimelineYear} />
+      <SpecularFrames activeSectionId={activeSectionId} timelineKey={displayedTimelineYear} />
       {sectionStretchKey > 0 ? <div className="section-transition-stretch" key={sectionStretchKey} aria-hidden="true" /> : null}
       <header className="site-header">
         <FluidGlass
@@ -2415,7 +2407,7 @@ export default function Home() {
                       if (!window.matchMedia(MOBILE_PAGE_MEDIA).matches) return;
                       if (event.target instanceof Element && event.target.closest('button, input, a')) return;
                       if (isMobileHeroEngaged) {
-                        revealHeroControls(!heroPlayback.paused);
+                        revealHeroControls(!isHeroPaused);
                         return;
                       }
                       setIsMobileHeroEngaged(true);
@@ -2476,33 +2468,19 @@ export default function Home() {
                           video.pause();
                         }
                       }}
-                      onTimeUpdate={(event) => {
-                        if (!isActive || heroStage !== 2) return;
-                        const video = event.currentTarget;
-                        setHeroPlayback((current) => ({
-                          ...current,
-                          currentTime: video.currentTime,
-                          duration: Number.isFinite(video.duration) ? video.duration : current.duration,
-                          paused: video.paused,
-                          muted: video.muted,
-                        }));
-                      }}
                       onPlay={() => {
                         if (isActive) {
-                          setHeroPlayback((current) => ({ ...current, paused: false }));
+                          setIsHeroPaused(false);
                           if (window.matchMedia(MOBILE_PAGE_MEDIA).matches) revealHeroControls(true);
                         }
                       }}
                       onPause={() => {
                         if (isActive) {
-                          setHeroPlayback((current) => ({ ...current, paused: true }));
+                          setIsHeroPaused(true);
                           if (window.matchMedia(MOBILE_PAGE_MEDIA).matches) revealHeroControls(false);
                         }
                       }}
-                      onVolumeChange={(event) => {
-                        const muted = event.currentTarget.muted;
-                        if (isActive) setHeroPlayback((current) => ({ ...current, muted }));
-                      }}
+
                     />
                     <GlassSurface {...heroGlassSurfaceProps} className="hero-glass-frame hero-screen-glass" />
                     {isActive && shouldLoadVideo && heroMediaStatus !== 'ready' ? (
@@ -2537,55 +2515,13 @@ export default function Home() {
                       </button>
                     ) : null}
                     {isActive && heroStage === 2 ? (
-                      <div className="hero-video-controls" aria-label={`${work.title} 播放控制`}>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const video = heroCarouselVideoRefs.current[index];
-                            if (!video) return;
-                            if (video.paused) {
-                              if (window.matchMedia(MOBILE_PAGE_MEDIA).matches) setIsMobileHeroEngaged(true);
-                              startHeroVideoPlayback(video);
-                            }
-                            else video.pause();
-                          }}
-                          aria-label={heroPlayback.paused ? '播放视频' : '暂停视频'}
-                        >
-                          {heroPlayback.paused ? '▶' : 'Ⅱ'}
-                        </button>
-                        <input
-                          type="range"
-                          min="0"
-                          max={Math.max(heroPlayback.duration, .01)}
-                          step="0.01"
-                          value={Math.min(heroPlayback.currentTime, Math.max(heroPlayback.duration, .01))}
-                          onChange={(event) => {
-                            const video = heroCarouselVideoRefs.current[index];
-                            if (!video) return;
-                            video.currentTime = Number(event.currentTarget.value);
-                            setHeroPlayback((current) => ({ ...current, currentTime: video.currentTime }));
-                          }}
-                          aria-label="视频播放进度"
-                        />
-                        <span>{formatHeroTime(heroPlayback.currentTime)} / {formatHeroTime(heroPlayback.duration)}</span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const video = heroCarouselVideoRefs.current[index];
-                            if (!video) return;
-                            if (video.muted) {
-                              video.muted = false;
-                              startHeroVideoPlayback(video);
-                            } else {
-                              video.muted = true;
-                            }
-                            setHeroPlayback((current) => ({ ...current, muted: video.muted }));
-                          }}
-                          aria-label={heroPlayback.muted ? '打开声音' : '关闭声音'}
-                        >
-                          {heroPlayback.muted ? '开启声音' : '声音'}
-                        </button>
-                      </div>
+                      <HeroVideoControls
+                        videos={heroCarouselVideoRefs}
+                        index={index}
+                        title={work.title}
+                        onRequestPlay={requestHeroPlay}
+                        onInteraction={revealHeroControls}
+                      />
                     ) : null}
                   </div>
                 );
@@ -2699,7 +2635,6 @@ export default function Home() {
               textColor="#ffffff"
               borderRadius={0.05}
               scrollEase={0.02}
-              fontUrl="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap"
               font="bold 30px Orbitron, Inter, sans-serif"
             >
               {timeline.map((item) => (
@@ -2721,8 +2656,124 @@ export default function Home() {
             </CircularGallery>
           </div>
 
+          <TimelineContent year={displayedTimelineYear} savedTimelineOrder={savedTimelineOrder} />
+        </div>
+      </section>
+
+      <section className="innovation-page" id="process" aria-labelledby="innovation-page-title">
+        <div className="innovation-page-background" aria-hidden="true">
+          {isDeviceReady && !useLightEffects && activeSectionId === 'process' ? (
+            <Iridescence
+              color={[1, 1, 1]}
+              mouseReact={false}
+              amplitude={0.1}
+              speed={1.0}
+            />
+          ) : null}
+        </div>
+        <section className="process-section section-shell">
+          <div className="section-heading">
+            <div>
+              <h2 id="innovation-page-title">当前制作流程及创新</h2>
+            </div>
+            <p className="section-lead">以 AI 协作贯穿剧本理解、制作决策、资产生成、导演分镜与后期声音，将一份剧本逐步推进为完整成片。</p>
+          </div>
+
+          <div className="process-track">
+            {workflow.map((step, index) => (
+              <article className="process-card" key={step.number}>
+                <div className="process-topline">
+                  <span>{step.number}</span>
+                </div>
+                {step.image ? (
+                  <div className="process-image">
+                    <img src={step.image} alt={step.imageAlt} width={1080} height={1920} loading="lazy" decoding="async" />
+                  </div>
+                ) : step.video ? (
+                  <div className="process-film">
+                    <div className="process-film-heading">
+                      <span>06</span>
+                      <div><strong>成片输出</strong><small>FINAL FILM</small></div>
+                    </div>
+                    <div className="process-film-player">
+                      <DeferredVideo controls playsInline preload="metadata" width={1280} height={720} src={step.video} aria-label="成片输出：医院场景最终视频，约14秒">
+                        您的浏览器不支持视频播放。
+                      </DeferredVideo>
+                      <div className="process-film-meta"><span>16:9 横屏</span><span>1280 × 720 · 14 秒</span></div>
+                    </div>
+                    <div className="process-film-footer"><span>乐湘浔 · AI 创作档案</span><span>成片展示</span></div>
+                  </div>
+                ) : (
+                  <div className={`process-symbol process-symbol--${index + 1}`} aria-hidden="true"><i /></div>
+                )}
+                <h3>{step.title}</h3>
+                <p>{step.copy}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="latest-section">
+          <div className="section-shell latest-grid">
+            <div className="latest-copy">
+              <h2>影视级 AI<br />创作系统</h2>
+              <p>面向政府项目宣传片与海外剧本创作，为了更高效、更专业地输出影视级视频，持续迭代并反复修改 Agent 与 Skill，尽可能发挥 AI 在创意分析、资产设计、分镜规划与视频制作中的最大作用。</p>
+              <div className="latest-meta">
+                <div><span>类型</span><strong>政府宣传片 · 海外剧本</strong></div>
+                <div><span>方向</span><strong>Agent · Skill · AI 全流程制作</strong></div>
+                <div><span>状态</span><strong>持续测试与迭代</strong></div>
+              </div>
+            </div>
+            <div className="latest-visual">
+              <img src="/images/latest-ai-filmmaking-system.webp" alt="影视级 AI 创作系统介绍：Agent 与 Skill 串联创意分析、资产设计、分镜规划和视频制作。深色电影风格的 AI 生成流程概念示意图。" width={1920} height={1200} loading="lazy" decoding="async" />
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <section className="download-section section-shell" id="downloads">
+        <div className="download-lanyard" aria-label="可拖动的乐湘浔作品资料卡，卡面包含个人简历入口">
+          <a
+            className={`download-card-fallback${isContactSceneReady ? ' is-hidden' : ''}`}
+            href="/documents/ai-designer-resume.png"
+            download="AI设计师简历.png"
+            aria-label="下载 AI 设计师简历"
+          >
+            <img src="/assets/lanyard/portfolio-card-front.svg?v=6" alt="乐湘浔个人简历卡片" loading="lazy" decoding="async" />
+          </a>
+          {isDeviceReady && !useLightEffects && activeSectionId === 'downloads' ? (
+            <Lanyard
+              position={[0, 0, 14.5]}
+              gravity={[0, -40, 0]}
+              fov={18}
+              frontImage="/assets/lanyard/portfolio-card-front.svg?v=6"
+              backImage="/assets/lanyard/portfolio-card-back.jpg"
+              imageFit="cover"
+              lanyardImage="/assets/lanyard/lanyard.png"
+              lanyardWidth={1.2}
+              downloadHref="/documents/ai-designer-resume.png"
+              downloadFilename="AI设计师简历.png"
+              onReady={() => setIsContactSceneReady(true)}
+            />
+          ) : null}
+        </div>
+      </section>
+    </main>
+  );
+}
+
+const pauseOtherModelVideos = (activeVideo: HTMLVideoElement) => {
+    document.querySelectorAll<HTMLVideoElement>('.timeline-model-video-strip video').forEach((video) => {
+      if (video !== activeVideo && !video.paused) {
+        video.pause();
+      }
+    });
+  };
+
+const TimelineContent = memo(function TimelineContent({ year, savedTimelineOrder }: { year: string; savedTimelineOrder: TimelineOrder }) {
+  return (
           <div className="timeline-list timeline-list--archive" aria-live="polite">
-            {timeline.filter((item) => item.year === activeTimelineYear).map((item) => {
+            {timeline.filter((item) => item.year === year).map((item) => {
               const index = timeline.findIndex((entry) => entry.year === item.year);
               const effectiveTimelineOrder = savedTimelineOrder[item.year] ?? timelineAdminCatalog[item.year];
               const orderedVideoCases = orderItems(item.videoCases, effectiveTimelineOrder, (entry) => entry.title);
@@ -3041,108 +3092,6 @@ export default function Home() {
               );
             })}
           </div>
-        </div>
-      </section>
-
-      <section className="innovation-page" id="process" aria-labelledby="innovation-page-title">
-        <div className="innovation-page-background" aria-hidden="true">
-          {isDeviceReady && !useLightEffects && activeSectionId === 'process' ? (
-            <Iridescence
-              color={[1, 1, 1]}
-              mouseReact={false}
-              amplitude={0.1}
-              speed={1.0}
-            />
-          ) : null}
-        </div>
-        <section className="process-section section-shell">
-          <div className="section-heading">
-            <div>
-              <h2 id="innovation-page-title">当前制作流程及创新</h2>
-            </div>
-            <p className="section-lead">以 AI 协作贯穿剧本理解、制作决策、资产生成、导演分镜与后期声音，将一份剧本逐步推进为完整成片。</p>
-          </div>
-
-          <div className="process-track">
-            {workflow.map((step, index) => (
-              <article className="process-card" key={step.number}>
-                <div className="process-topline">
-                  <span>{step.number}</span>
-                </div>
-                {step.image ? (
-                  <div className="process-image">
-                    <img src={step.image} alt={step.imageAlt} width={1080} height={1920} loading="lazy" decoding="async" />
-                  </div>
-                ) : step.video ? (
-                  <div className="process-film">
-                    <div className="process-film-heading">
-                      <span>06</span>
-                      <div><strong>成片输出</strong><small>FINAL FILM</small></div>
-                    </div>
-                    <div className="process-film-player">
-                      <DeferredVideo controls playsInline preload="metadata" width={1280} height={720} src={step.video} aria-label="成片输出：医院场景最终视频，约14秒">
-                        您的浏览器不支持视频播放。
-                      </DeferredVideo>
-                      <div className="process-film-meta"><span>16:9 横屏</span><span>1280 × 720 · 14 秒</span></div>
-                    </div>
-                    <div className="process-film-footer"><span>乐湘浔 · AI 创作档案</span><span>成片展示</span></div>
-                  </div>
-                ) : (
-                  <div className={`process-symbol process-symbol--${index + 1}`} aria-hidden="true"><i /></div>
-                )}
-                <h3>{step.title}</h3>
-                <p>{step.copy}</p>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <section className="latest-section">
-          <div className="section-shell latest-grid">
-            <div className="latest-copy">
-              <h2>影视级 AI<br />创作系统</h2>
-              <p>面向政府项目宣传片与海外剧本创作，为了更高效、更专业地输出影视级视频，持续迭代并反复修改 Agent 与 Skill，尽可能发挥 AI 在创意分析、资产设计、分镜规划与视频制作中的最大作用。</p>
-              <div className="latest-meta">
-                <div><span>类型</span><strong>政府宣传片 · 海外剧本</strong></div>
-                <div><span>方向</span><strong>Agent · Skill · AI 全流程制作</strong></div>
-                <div><span>状态</span><strong>持续测试与迭代</strong></div>
-              </div>
-            </div>
-            <div className="latest-visual">
-              <img src="/images/latest-ai-filmmaking-system.webp" alt="影视级 AI 创作系统介绍：Agent 与 Skill 串联创意分析、资产设计、分镜规划和视频制作。深色电影风格的 AI 生成流程概念示意图。" width={1920} height={1200} loading="lazy" decoding="async" />
-            </div>
-          </div>
-        </section>
-      </section>
-
-      <section className="download-section section-shell" id="downloads">
-        <div className="download-lanyard" aria-label="可拖动的乐湘浔作品资料卡，卡面包含个人简历入口">
-          <a
-            className={`download-card-fallback${isContactSceneReady ? ' is-hidden' : ''}`}
-            href="/documents/ai-designer-resume.png"
-            download="AI设计师简历.png"
-            aria-label="下载 AI 设计师简历"
-          >
-            <img src="/assets/lanyard/portfolio-card-front.svg?v=6" alt="乐湘浔个人简历卡片" loading="lazy" decoding="async" />
-          </a>
-          {isDeviceReady && !useLightEffects && activeSectionId === 'downloads' ? (
-            <Lanyard
-              position={[0, 0, 14.5]}
-              gravity={[0, -40, 0]}
-              fov={18}
-              frontImage="/assets/lanyard/portfolio-card-front.svg?v=6"
-              backImage="/assets/lanyard/portfolio-card-back.jpg"
-              imageFit="cover"
-              lanyardImage="/assets/lanyard/lanyard.png"
-              lanyardWidth={1.2}
-              downloadHref="/documents/ai-designer-resume.png"
-              downloadFilename="AI设计师简历.png"
-              onReady={() => setIsContactSceneReady(true)}
-            />
-          ) : null}
-        </div>
-      </section>
-    </main>
   );
-}
+});
 

@@ -255,9 +255,11 @@ const RippleDistortion = ({
   const mountRef = useRef<HTMLDivElement | null>(null);
   const configRef = useRef<WaveConfig>({} as WaveConfig);
   const uniformsRef = useRef<RippleUniforms | null>(null);
+  const wakeRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     configRef.current = { brushSize, spread, fade, spacing, clickStrength, trigger, enabled };
+    wakeRef.current?.();
   }, [brushSize, spread, fade, spacing, clickStrength, trigger, enabled]);
 
   useEffect(() => {
@@ -407,6 +409,7 @@ const RippleDistortion = ({
       wave.target = START_SCALE * Math.max(1, cfg.spread) * power;
       wave.size = Math.max(1, cfg.brushSize);
       wave.opacity = 1;
+      wake();
     };
 
     const localPoint = (clientX: number, clientY: number): [number, number] | null => {
@@ -437,6 +440,7 @@ const RippleDistortion = ({
       idleTimer = window.setTimeout(() => {
         mount.dataset.rippleHover = 'false';
         waves.forEach((wave) => { wave.opacity = 0; });
+        wake();
       }, 500);
     };
 
@@ -472,11 +476,17 @@ const RippleDistortion = ({
     let previousTime = 0;
     let hadVisibleWave = false;
 
+    function wake() {
+      if (!raf && !disposed && !document.hidden) raf = requestAnimationFrame(loop);
+    }
+
     const loop = (now: number) => {
-      raf = requestAnimationFrame(loop);
+      raf = 0;
+      if (disposed || document.hidden) return;
       const delta = previousTime ? Math.min(0.05, (now - previousTime) / 1000) : 0;
       previousTime = now;
       const cfg = configRef.current;
+      if (!cfg.enabled) waves.forEach((wave) => { wave.opacity = 0; });
 
       const growth = reduceMotion ? 0 : 1 - Math.exp(-delta * 1.09);
       const decay = reduceMotion ? 1 : Math.exp((-delta * LIFE_CONSTANT) / Math.max(0.15, cfg.fade));
@@ -515,12 +525,25 @@ const RippleDistortion = ({
         renderer.render({ scene: compositeMesh });
       }
       hadVisibleWave = hasVisibleWave;
+      if (hasVisibleWave) wake();
+      else previousTime = 0;
     };
-    raf = requestAnimationFrame(loop);
+    const onVisibilityChange = () => {
+      if (document.hidden) {
+        cancelAnimationFrame(raf);
+        raf = 0;
+        previousTime = 0;
+      } else wake();
+    };
+    wakeRef.current = wake;
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    wake();
 
     return () => {
       disposed = true;
       cancelAnimationFrame(raf);
+      wakeRef.current = null;
+      document.removeEventListener('visibilitychange', onVisibilityChange);
       window.clearTimeout(idleTimer);
       ro.disconnect();
       window.removeEventListener('mousemove', onMove);

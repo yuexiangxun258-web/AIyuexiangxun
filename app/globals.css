@@ -1,5 +1,13 @@
 @import 'tailwindcss';
 
+@font-face {
+  font-family: 'Orbitron';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/orbitron-700.ttf') format('truetype');
+}
+
 .media-retry { display: block; width: 100%; padding: 14px; border: 1px solid #caff55; border-radius: 12px; color: #fff; background: #171c25; cursor: pointer; }
 
 :root {
@@ -23,10 +31,12 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 a { color: inherit; text-decoration: none; }
-button, a { -webkit-tap-highlight-color: transparent; }
+button, a { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 button { font: inherit; }
 .section-is-paused,
-.section-is-paused * { animation-play-state: paused !important; }
+.section-is-paused *,
+.section-is-paused *::before,
+.section-is-paused *::after { animation-play-state: paused !important; }
 /* Let intrinsic media shrink within grids, and size players to the viewport. */
 main video { display: block; width: 100%; height: auto; max-width: 100%; max-height: min(72svh, calc(100svh - 144px)); aspect-ratio: auto; object-fit: contain; margin-inline: auto; background: transparent; }
 .recent-grid > *, .timeline-item > *, .timeline-video-cases > *, .timeline-storyboard > *, .timeline-model-video-strip, .timeline-logo-video-grid > *, .process-track > * { min-width: 0; }
@@ -512,7 +522,7 @@ main video { display: block; width: 100%; height: auto; max-width: 100%; max-hei
 .agency-motion-enabled .process-card,
 .agency-motion-enabled .latest-grid,
 .agency-motion-enabled .download-lanyard {
-  will-change: transform, opacity, clip-path;
+  will-change: auto;
 }
 .agency-parallax-media {
   transform: translate3d(0, var(--agency-parallax-y, 0), 0) scale(1.045);

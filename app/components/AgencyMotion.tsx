@@ -8,17 +8,17 @@ type AgencyMotionProps = {
 
 const cinematicEase = 'cubic-bezier(0.16, 1, 0.3, 1)';
 
-const revealElement = (element: HTMLElement, delay = 0, distance = 84) => {
+const revealElement = (element: HTMLElement, delay = 0, distance = 84, duration = 1250) => {
   const animation = element.animate([
     { opacity: 0, transform: `translate3d(0, ${distance}px, 0) scale(.965)`, clipPath: 'inset(0 0 18% 0 round 24px)' },
     { opacity: 1, transform: 'translate3d(0, 0, 0) scale(1)', clipPath: 'inset(0 0 0 0 round 0)' },
   ], {
-    duration: 1250,
+    duration,
     delay,
     easing: cinematicEase,
     fill: 'backwards',
   });
-  window.setTimeout(() => animation.cancel(), delay + 1350);
+  window.setTimeout(() => animation.cancel(), delay + duration + 100);
   return animation;
 };
 
@@ -163,18 +163,18 @@ export default function AgencyMotion({ timelineKey }: AgencyMotionProps) {
           animations.push(headingTitle.animate([
             { opacity: 0, transform: 'translate3d(0, 82px, 0) scaleX(.72) scaleY(.72)', clipPath: 'inset(0 0 100% 0)' },
             { opacity: 1, transform: 'translate3d(0, 0, 0) scale(1)', clipPath: 'inset(0 0 0 0)' },
-          ], { duration: 1350, delay: 640, easing: cinematicEase, fill: 'forwards' }));
+          ], { duration: 650, delay: 80, easing: cinematicEase, fill: 'forwards' }));
         }
 
         if (headingCopy) {
           animations.push(headingCopy.animate([
             { opacity: 0, transform: 'translate3d(0, 44px, 0)', clipPath: 'inset(0 0 100% 0)' },
             { opacity: 1, transform: 'translate3d(0, 0, 0)', clipPath: 'inset(0 0 0 0)' },
-          ], { duration: 1100, delay: 860, easing: cinematicEase, fill: 'forwards' }));
+          ], { duration: 550, delay: 120, easing: cinematicEase, fill: 'forwards' }));
         }
 
         cards.forEach((card, index) => {
-          animations.push(revealElement(card, 1020 + index * 145, 92));
+          animations.push(revealElement(card, 60 + index * 35, 28, 480));
         });
       }, { threshold: .12, rootMargin: '0px 0px -8% 0px' });
 
@@ -215,7 +215,8 @@ export default function AgencyMotion({ timelineKey }: AgencyMotionProps) {
     timers.push(window.setTimeout(() => {
       const panel = document.querySelector<HTMLElement>('#timeline .timeline-item');
       if (!panel) return;
-      animations.push(revealElement(panel, 180, 105));
+      // The panel already has the CSS archive reveal. A second full-panel
+      // clip animation rasterizes the whole long portfolio on every click.
 
       const nestedCards = Array.from(panel.querySelectorAll<HTMLElement>(
         '.timeline-video-case, .timeline-gallery-group, .timeline-storyboard-panel, .timeline-case-asset-group',

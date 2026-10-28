@@ -126,6 +126,7 @@ export default function Balatro({
   mouseInteraction = true,
 }: BalatroProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const [offsetX, offsetY] = offset;
 
   useEffect(() => {
     const container = containerRef.current;
@@ -149,7 +150,7 @@ export default function Balatro({
         iResolution: { value: [1, 1, 1] },
         uSpinRotation: { value: spinRotation },
         uSpinSpeed: { value: spinSpeed },
-        uOffset: { value: offset },
+        uOffset: { value: [offsetX, offsetY] },
         uColor1: { value: hexToVec4(color1) },
         uColor2: { value: hexToVec4(color2) },
         uColor3: { value: hexToVec4(color3) },
@@ -189,8 +190,9 @@ export default function Balatro({
     };
 
     const draw = (now: number) => {
-      frame = window.requestAnimationFrame(draw);
+      frame = 0;
       if (!visible || document.hidden) return;
+      frame = window.requestAnimationFrame(draw);
       if (now - lastRenderAt < 1000 / 30) return;
       lastRenderAt = now;
       pointerX += (pointerTargetX - pointerX) * 0.075;
@@ -199,13 +201,24 @@ export default function Balatro({
       renderer.render({ scene: mesh });
     };
 
+    const updatePlayback = () => {
+      if (visible && !document.hidden) {
+        if (!frame) frame = window.requestAnimationFrame(draw);
+      } else {
+        window.cancelAnimationFrame(frame);
+        frame = 0;
+      }
+    };
+
     const resizeObserver = new ResizeObserver(resize);
     const visibilityObserver = new IntersectionObserver(([entry]) => {
       visible = entry.isIntersecting;
+      updatePlayback();
     }, { rootMargin: '120px 0px' });
     resizeObserver.observe(container);
     visibilityObserver.observe(container);
     window.addEventListener('pointermove', handlePointerMove, { passive: true });
+    document.addEventListener('visibilitychange', updatePlayback);
     resize();
     frame = window.requestAnimationFrame(draw);
 
@@ -214,12 +227,13 @@ export default function Balatro({
       resizeObserver.disconnect();
       visibilityObserver.disconnect();
       window.removeEventListener('pointermove', handlePointerMove);
+      document.removeEventListener('visibilitychange', updatePlayback);
       canvas.remove();
       geometry.remove?.();
       program.remove?.();
       gl.getExtension('WEBGL_lose_context')?.loseContext();
     };
-  }, [color1, color2, color3, contrast, isRotate, lighting, mouseInteraction, offset, pixelFilter, spinAmount, spinEase, spinRotation, spinSpeed]);
+  }, [color1, color2, color3, contrast, isRotate, lighting, mouseInteraction, offsetX, offsetY, pixelFilter, spinAmount, spinEase, spinRotation, spinSpeed]);
 
   return <div ref={containerRef} className="balatro-container" />;
 }
